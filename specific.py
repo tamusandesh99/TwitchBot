@@ -4,7 +4,7 @@ from PIL import Image
 
 path = f"./screenshots"
 titles = pygetwindow.getAllTitles()
-x1, y1, width, height = pygetwindow.getWindowGeometry('sandeshgrg75- -bash - 80x24')
+x1, y1, width, height = pygetwindow.getWindowGeometry('Terminal')
 x2 = x1+width
 y2 = y1+height
 pyautogui.screenshot(path)
