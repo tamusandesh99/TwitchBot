@@ -170,7 +170,7 @@ patsy==0.5.2
 pep8==1.7.1
 pexpect @ file:///tmp/build/80754af9/pexpect_1605563209008/work
 pickleshare @ file:///tmp/build/80754af9/pickleshare_1606932040724/work
-Pillow==8.4.0
+Pillow~=9.4.0
 pipenv==2023.2.18
 pkginfo==1.7.1
 platformdirs==3.1.1
@@ -291,3 +291,9 @@ zict==2.0.0
 zipp @ file:///tmp/build/80754af9/zipp_1633618647012/work
 zope.event==4.5.0
 zope.interface @ file:///opt/concourse/worker/volumes/live/8c2d4bd1-6406-47f0-45ce-890992bafbf6/volume/zope.interface_1625036159007/work
+
+pyscreenshot~=3.1
+schedule~=1.1.0
+pytesseract~=0.3.10
+PyGetWindow~=0.0.8
+PyAutoGUI~=0.9.50
