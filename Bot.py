@@ -1,6 +1,7 @@
 import json
 from twitchio.ext import commands
 import config
+import time
 
 """ Initializing the bot """
 bot = commands.Bot(
@@ -19,12 +20,39 @@ def get_count():
         return data['total_run']
 
 
+def update_send_run():
+    with open(config.JSON_FILE) as json_file:
+        data = json.load(json_file)
+        data['send_run'] = False
+    with open(config.JSON_FILE, 'w') as json_file:
+        json.dump(data, json_file, sort_keys=True, indent=4)
+
+
+def check_if_send_total_run():
+    with open(config.JSON_FILE) as json_file:
+        data = json.load(json_file)
+        return data['send_run']
+
+
 run = get_count()
 
 
 @bot.event()
 async def event_ready():
     print('Bot is ready with run of: ' + str(run))
+
+
+@bot.event()
+async def event_ready():
+    while True:
+        try:
+            if check_if_send_total_run():
+                print("this is true")
+                await bot.connected_channels[0].send('Total run: ' + str(get_count()))
+                update_send_run()
+        except:
+            print('Error in sending messsage')
+        time.sleep(3)
 
 
 @bot.event()
@@ -35,7 +63,7 @@ async def event_message(ctx):
 
 
 @bot.command(name='attempts')
-async def sendRun(ctx):
+async def sendRun_command(ctx):
     await ctx.send(str(get_count()))
 
 
@@ -66,5 +94,4 @@ async def test_command(ctx):
 
 if __name__ == '__main__':
     bot.run()
-
-
+    # sendRun_automatic()

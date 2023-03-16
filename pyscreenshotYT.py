@@ -5,18 +5,11 @@ import time
 
 
 def take_screenshot():
-    print("ready to take screenshot")
-    image_name = f"screensshot-{str(datetime.now())}"
-    screenshot = ImageGrab.grab()
-    filepath = f"./screenshots/{image_name}.png"
-    screenshot.save(filepath)
-    print("screenshot taken")
-    return filepath
+    dialogues = ['Malenia', 'Blade', 'Miquella',
+                 'Flesh', 'Let', 'Your', 'be', 'consumed',
+                 'scarlet', 'rot']
+    test = ['<V)', 'Touch', 'bloodsrain','=', 'ibe','~']
 
 
-def main():
-    schedule.every(5).seconds.do(take_screenshot())
-    while True:
-        schedule.run_pending()
-        time.sleep(1)
-
+if __name__ == '__main__':
+    take_screenshot()
