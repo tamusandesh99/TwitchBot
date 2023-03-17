@@ -67,6 +67,7 @@ def main():
 
             if any([x in text_died for x in deathMark]):
                 print('Died')
+                print(text_died)
                 total_run += 1
                 update_count(total_run)  # update the value in json if conditions met
                 time.sleep(7)
@@ -75,7 +76,7 @@ def main():
 
 def get_count():
     """ Reads the count from the JSON file and returns it """
-    """Run: 125 """
+    """Run: 226 """
     with open(config.JSON_FILE) as json_file:
         data = json.load(json_file)
         return data['total_run']

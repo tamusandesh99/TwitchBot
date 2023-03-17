@@ -48,6 +48,7 @@ async def event_ready():
         try:
             if check_if_send_total_run():
                 print("this is true")
+                time.sleep(3)
                 await bot.connected_channels[0].send('Total run: ' + str(get_count()))
                 update_send_run()
         except:
