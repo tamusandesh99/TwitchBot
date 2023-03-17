@@ -297,3 +297,4 @@ schedule~=1.1.0
 pytesseract~=0.3.10
 PyGetWindow~=0.0.8
 PyAutoGUI~=0.9.50
+mss~=7.0.1
