@@ -50,7 +50,7 @@ async def event_ready():
 async def event_message(ctx):
     print(ctx.author.name)
     print(ctx.content)
-    await bot.handle_commands(ctx)
+    # await bot.handle_commands(ctx)
 
 
 # @bot.event()
@@ -67,9 +67,10 @@ async def event_message(ctx):
 #         print('Error in sending messsage')
 #     time.sleep(3)
 
-@bot.command(name="test")
+@bot.command(name="rules")
 async def test_command(ctx):
-    print("test")
+    await ctx.send("Rules are simple: if you roll odd, your points get divided. If even then multiplied. You start "
+                   "with 100")
 
 
 @bot.command(name="points")
@@ -78,8 +79,10 @@ async def get_points(ctx):
         users_data = json.load(json_file)
     if ctx.author.name in users_data:
         print(users_data[ctx.author.name])
+        send_points = int(users_data[ctx.author.name])
+        await ctx.send("@" + ctx.author.name + "Your points: " + str(send_points))
     else:
-        users_data[ctx.author.name] = 6
+        users_data[ctx.author.name] = 100
         with open(config.POINTS_FILE, 'w') as json_file:
             json.dump(users_data, json_file, sort_keys=True, indent=4, separators=(',', ': '))
 
@@ -101,7 +104,7 @@ async def roll_dice(ctx):
         users_data[ctx.author.name] = user_point
         with open(config.POINTS_FILE, 'w') as json_file:
             json.dump(users_data, json_file, sort_keys=True, indent=4, separators=(',', ': '))
-        await ctx.send(str(users_data[ctx.author.name]))
+        await ctx.send("@"+ctx.author.name + " rolled " + str(random_roll) + "." + " Total points: " + str(users_data[ctx.author.name]))
 
 
 @bot.command(name='attempts')
