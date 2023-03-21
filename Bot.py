@@ -1,7 +1,7 @@
 import json
 from twitchio.ext import commands
 import config
-import time
+import random
 
 """ Initializing the bot """
 bot = commands.Bot(
@@ -20,6 +20,13 @@ def get_count():
         return data['total_run']
 
 
+def get_counter_status():
+    """ Reads the count status (stop or start) from the JSON file and returns it """
+    with open(config.JSON_FILE) as json_file:
+        data = json.load(json_file)
+        return data['stop_counter']
+
+
 def update_send_run():
     with open(config.JSON_FILE) as json_file:
         data = json.load(json_file)
@@ -34,43 +41,81 @@ def check_if_send_total_run():
         return data['send_run']
 
 
-run = get_count()
-
-
 @bot.event()
 async def event_ready():
-    print('Bot is ready with run of: ' + str(run))
-
-
-@bot.event()
-async def event_ready():
-    while True:
-        try:
-            if check_if_send_total_run():
-                print("this is true")
-                time.sleep(3)
-                await bot.connected_channels[0].send('Total run: ' + str(get_count()))
-                update_send_run()
-        except:
-            print('Error in sending messsage')
-        time.sleep(3)
+    print('Bot is ready with run of: ' + str(get_count()))
 
 
 @bot.event()
 async def event_message(ctx):
-    print(ctx.author)
+    print(ctx.author.name)
     print(ctx.content)
     await bot.handle_commands(ctx)
 
 
+# @bot.event()
+# async def event_ready():
+#     try:
+#         while True:
+#             if check_if_send_total_run():
+#                 print("this is true")
+#                 time.sleep(3)
+#                 await bot.connected_channels[0].send('Total run: ' + str(get_count()))
+#                 update_send_run()
+#
+#     except:
+#         print('Error in sending messsage')
+#     time.sleep(3)
+
+@bot.command(name="test")
+async def test_command(ctx):
+    print("test")
+
+
+@bot.command(name="points")
+async def get_points(ctx):
+    with open(config.POINTS_FILE) as json_file:
+        users_data = json.load(json_file)
+    if ctx.author.name in users_data:
+        print(users_data[ctx.author.name])
+    else:
+        users_data[ctx.author.name] = 6
+        with open(config.POINTS_FILE, 'w') as json_file:
+            json.dump(users_data, json_file, sort_keys=True, indent=4, separators=(',', ': '))
+
+
+@bot.command(name="roll")
+async def roll_dice(ctx):
+    with open(config.POINTS_FILE) as json_file:
+        users_data = json.load(json_file)
+    if ctx.author.name in users_data:
+        user_point = users_data[ctx.author.name]
+        random_roll = random.randint(0, 6)
+        print(random_roll)
+        if random_roll % 2 == 0:
+            user_point = user_point * random_roll
+            print(user_point)
+        else:
+            user_point = user_point / random_roll
+            print(user_point)
+        users_data[ctx.author.name] = user_point
+        with open(config.POINTS_FILE, 'w') as json_file:
+            json.dump(users_data, json_file, sort_keys=True, indent=4, separators=(',', ': '))
+        await ctx.send(str(users_data[ctx.author.name]))
+
+
 @bot.command(name='attempts')
 async def sendRun_command(ctx):
+    print("pp")
     await ctx.send(str(get_count()))
 
 
 @bot.command(name='challenges')
 async def test_command(ctx):
-    await ctx.send("Brett is the god")
+    try:
+        await ctx.send("Brett is the god")
+    except:
+        print('error')
 
 
 @bot.command(name='fist')
@@ -95,4 +140,3 @@ async def test_command(ctx):
 
 if __name__ == '__main__':
     bot.run()
-    # sendRun_automatic()

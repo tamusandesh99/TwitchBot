@@ -1,11 +1,8 @@
 import json
-
-from twitchio.ext import commands
 import config
 import mss
 import mss.tools
 import time
-from PIL import Image
 from pytesseract import pytesseract
 
 
@@ -61,16 +58,18 @@ def main():
             if any([x in text_blade for x in dialogues]):
                 print("Blade")
                 print(text_blade)
+                time.sleep(1)
                 total_run += 1
                 update_count(total_run)  # update the value in json if conditions met
-                time.sleep(10)
+                time.sleep(9)
 
             if any([x in text_died for x in deathMark]):
                 print('Died')
                 print(text_died)
+                time.sleep(1)
                 total_run += 1
                 update_count(total_run)  # update the value in json if conditions met
-                time.sleep(7)
+                time.sleep(8)
             print(total_run)
 
 
