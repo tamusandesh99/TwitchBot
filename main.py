@@ -52,21 +52,21 @@ def main():
             dialogues = ['Malenia', 'Blade', 'Miquella',
                          'Flesh', 'Your', 'consumed',
                          'scarlet']
-            deathMark = ['YOU', 'DIED', 'OUD', 'OU', 'IED', 'YO']
+            deathMark = ['YOU', 'DIED']
 
             #  Compares if the texts in screenshot matches with default condition text
-            if any([x in text_blade for x in dialogues]):
+            if any([word in text_blade for word in dialogues]):
                 print("Blade")
                 print(text_blade)
-                time.sleep(1)
+                time.sleep(3)
                 total_run += 1
                 update_count(total_run)  # update the value in json if conditions met
                 time.sleep(9)
 
-            if any([x in text_died for x in deathMark]):
+            if any([word in text_died for word in deathMark]):
                 print('Died')
                 print(text_died)
-                time.sleep(1)
+                time.sleep(3)
                 total_run += 1
                 update_count(total_run)  # update the value in json if conditions met
                 time.sleep(8)
