@@ -14,61 +14,12 @@ bot = commands.Bot(
 )
 
 
-def get_count():
-    """ Reads the count from the JSON file and returns it """
-    with open(config.JSON_FILE) as json_file:
-        data = json.load(json_file)
-        return data['total_run']
-
-
-# def get_counter_status():
-#     """ Reads the count status (stop or start) from the JSON file and returns it """
-#     with open(config.JSON_FILE) as json_file:
-#         data = json.load(json_file)
-#         return data['stop_counter']
-#
-#
-def update_send_run():
-    with open(config.JSON_FILE) as json_file:
-        data = json.load(json_file)
-        data['send_run'] = False
-    with open(config.JSON_FILE, 'w') as json_file:
-        json.dump(data, json_file, sort_keys=True, indent=4)
-
-
-def check_if_send_total_run():
-    with open(config.JSON_FILE) as json_file:
-        data = json.load(json_file)
-        return data['send_run']
-
-
-@bot.event()
-async def event_ready():
-    print('Bot is ready with run of: ' + str(get_count()))
-
-
 @bot.event()
 async def event_message(ctx):
     try:
         print(ctx.author.name + ": " + ctx.content)
     except:
         await bot.handle_commands(ctx)
-
-
-""" this runs in infinite loop. Checks weather to send the run count on chat or not from json file """
-# @bot.event()
-# async def event_ready():
-#     try:
-#         while True:
-#             if check_if_send_total_run():
-#                 print("this is true")
-#                 # time.sleep(3)
-#                 # await bot.connected_channels[0].send('Total run: ' + str(get_count()))
-#                 update_send_run()
-#                 time.sleep(3)
-#
-#     except:
-#         print('Error in sending messsage')
 
 
 # Returns the rules for roll commands
@@ -93,12 +44,13 @@ async def addPoints(ctx, user_name, points):
         else:
             await ctx.send(user_name + " is not in the database boss")
     else:
-        await ctx.send("@"+ctx.author.name+" You are not Boco")
+        await ctx.send("@" + ctx.author.name + " You are not Boco")
 
 
 # Checks if the bot is connected to the chat
 @bot.command(name="check")
 async def check(ctx):
+    print('here')
     await ctx.send("@" + ctx.author.name + " Im here")
 
 
@@ -125,7 +77,8 @@ async def roll_dice(ctx, arg):
         users_data = json.load(json_file)
     if ctx.author.name in users_data:
         user_point = users_data[ctx.author.name]
-        random_roll = random.randint(0, 6)
+        temporary_points = user_point  # Assigning original points to temp before I change the points
+        random_roll = random.randint(1, 6)
         user_point_int = int(user_point)
         argument_int = int(arg)
 
@@ -133,17 +86,21 @@ async def roll_dice(ctx, arg):
             await ctx.send("@" + ctx.author.name + ". Your total point is: "
                            + str(int(user_point)) + ". " + "Roll lower.")
         else:
-            if random_roll % 2 == 0:
-                user_point = user_point * random_roll
-                print(user_point)
+            calculation = int(arg) * random_roll
+            if random_roll % 2 == 1:
+                user_point = user_point + calculation
             else:
-                user_point = user_point / random_roll
-                # print(user_point)
+                user_point = user_point - calculation
+            if user_point < 0:
+                user_point = 0
             users_data[ctx.author.name] = user_point
         with open(config.POINTS_FILE, 'w') as json_file:
             json.dump(users_data, json_file, sort_keys=True, indent=4, separators=(',', ': '))
-        await ctx.send("@" + ctx.author.name + " rolled " + str(random_roll) + "." + " Total points: " +
-                       str(int(users_data[ctx.author.name])))
+        profit = user_point - temporary_points
+        await ctx.send(
+            "@" + ctx.author.name + " rolled dice " + str(random_roll) + "." + " Profit: " + str(int(profit)) +
+            "." + " Total points: " +
+            str(int(users_data[ctx.author.name])))
     else:
         await ctx.send("@" + ctx.author.name + "." + " You don't have points. Do !points to add points")
 
