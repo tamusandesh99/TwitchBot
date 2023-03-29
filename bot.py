@@ -2,7 +2,10 @@ import json
 from twitchio.ext import commands
 import config
 import random
+import BotLoop
 import time
+import requests
+from twitchAPI import Twitch
 
 """ Initializing the bot """
 bot = commands.Bot(
@@ -14,12 +17,72 @@ bot = commands.Bot(
 )
 
 
+# gets run count from json file
+def get_count():
+    """ Reads the count from the JSON file and returns it """
+    with open(config.JSON_FILE) as json_file:
+        data = json.load(json_file)
+        return data['total_run']
+
+
 @bot.event()
 async def event_message(ctx):
     try:
         print(ctx.author.name + ": " + ctx.content)
     except:
         await bot.handle_commands(ctx)
+
+
+# Stops the loop in BotLoop file. Stops sending messages
+@bot.command(name="stop")
+async def stop_loop(ctx):
+    if ctx.author.name == 'boco6969':
+        with open(config.JSON_FILE) as json_file:
+            check_status_of_loop = json.load(json_file)
+        check_status_of_loop['stop_loop'] = True
+        with open(config.JSON_FILE, 'w') as json_file:
+            json.dump(check_status_of_loop, json_file, sort_keys=True, indent=4)
+        print("loop stopped")
+
+
+# starts the loop in BootLoop file for sending message in channel.
+@bot.command(name="start")
+async def start_loop(ctx):
+    if ctx.author.name == 'boco6969':
+        with open(config.JSON_FILE) as json_file:
+            check_status_of_loop = json.load(json_file)
+        check_status_of_loop['stop_loop'] = False
+        with open(config.JSON_FILE, 'w') as json_file:
+            json.dump(check_status_of_loop, json_file, sort_keys=True, indent=4)
+        print("loop start")
+
+
+# Modifies the total_run in json file by adding the amount user provides
+@bot.command(name="increment")
+async def increment_count(ctx, increment_run):
+    if ctx.author.name == 'boco6969':
+        current_run = get_count()
+        with open(config.JSON_FILE) as json_file:
+            modify_run = json.load(json_file)
+        modify_run['total_run'] = current_run + int(increment_run)
+        with open(config.JSON_FILE, 'w') as json_file:
+            json.dump(modify_run, json_file, sort_keys=True, indent=4)
+        await ctx.send("@boco6969" + ' ' + "count added by " + increment_run + ". " + "Was: " + str(current_run)
+                       + " Now: " + str(get_count()))
+
+
+# Modifies the total_run in json file by adding the amount user provides
+@bot.command(name="decrement")
+async def decrement_count(ctx, decrement_run):
+    if ctx.author.name == 'boco6969':
+        current_run = get_count()
+        with open(config.JSON_FILE) as json_file:
+            modify_run = json.load(json_file)
+        modify_run['total_run'] = current_run - int(decrement_run)
+        with open(config.JSON_FILE, 'w') as json_file:
+            json.dump(modify_run, json_file, sort_keys=True, indent=4)
+        await ctx.send("@boco6969" + ' ' + "count subtracted by " + decrement_run + ". " + "Was: " + str(current_run)
+                       + " Now: " + str(get_count()))
 
 
 # Returns the rules for roll commands
@@ -108,7 +171,7 @@ async def roll_dice(ctx, arg):
 @bot.command(name='attempts')
 async def sendRun_command(ctx):
     print("pp")
-    await ctx.send(str(get_count()))
+    await ctx.send('@' + ctx.author.name + ' ' + str(get_count()))
 
 
 @bot.command(name='challenges')

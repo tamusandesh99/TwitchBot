@@ -1,4 +1,5 @@
 {
-    "send_run": false,
-    "total_run": 360
+    "send_run": true,
+    "stop_loop": true,
+    "total_run": 384
 }

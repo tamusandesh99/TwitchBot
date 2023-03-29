@@ -51,7 +51,7 @@ def main():
             # Default texts to match with screenshot texts
             dialogues = ['Malenia', 'Blade', 'Miquella',
                          'Flesh', 'Your', 'consumed',
-                         'scarlet']
+                         'scarlet', 'rot', 'Let']
             deathMark = ['YOU', 'DIED']
 
             #  Compares if the texts in screenshot matches with default condition text

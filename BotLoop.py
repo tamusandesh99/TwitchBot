@@ -38,6 +38,13 @@ def check_if_send_total_run():
         return data['send_run']
 
 
+def stop_loop():
+    with open(config.JSON_FILE) as json_file:
+        check_status_of_loop = json.load(json_file)
+        # print(data['send_run'])
+        return check_status_of_loop['stop_loop']
+
+
 @bot.event()
 async def event_ready():
     print('Bot is ready with run of: ' + str(get_count()))
@@ -47,13 +54,17 @@ async def event_ready():
 @bot.event()
 async def event_ready():
     while True:
-        if check_if_send_total_run():
-            print('--------------------------')
-            print("Sending total count now")
-            print('--------------------------')
-            # time.sleep(3)
-            await bot.connected_channels[0].send('Total run: ' + str(get_count()))
-            update_send_run()
+        if not stop_loop():
+            print("bot is running")
+            if check_if_send_total_run():
+                print('--------------------------')
+                print("Sending total count now: " + str(get_count()))
+                print('--------------------------')
+                # time.sleep(3)
+                # await bot.connected_channels[0].send('Total run: ' + str(get_count()))
+                # update_send_run()
+        else:
+            print("bot has stopped")
         time.sleep(3)
 
 
