@@ -61,8 +61,8 @@ async def event_ready():
                 print("Sending total count now: " + str(get_count()))
                 print('--------------------------')
                 # time.sleep(3)
-                # await bot.connected_channels[0].send('Total run: ' + str(get_count()))
-                # update_send_run()
+                await bot.connected_channels[0].send('Total run: ' + str(get_count()))
+                update_send_run()
         else:
             print("bot has stopped")
         time.sleep(3)

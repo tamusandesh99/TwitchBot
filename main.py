@@ -75,7 +75,6 @@ def main():
 
 def get_count():
     """ Reads the count from the JSON file and returns it """
-    """Run: 226 """
     with open(config.JSON_FILE) as json_file:
         data = json.load(json_file)
         return data['total_run']
