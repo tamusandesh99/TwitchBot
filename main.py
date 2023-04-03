@@ -8,10 +8,10 @@ from pytesseract import pytesseract
 
 def main():
     """ Start of the screen capture """
-    total_run = get_count()  # Getting the total run stored in json file
     myconfig = r"--psm 3 --oem 3"  # initializing the configuration for tesseract
     with mss.mss() as sct:
         while True:
+            total_run = get_count()  # Getting the total run stored in json file
             monitor_number = 2  # screenshot pointing to 2nd monitor
             mon = sct.monitors[monitor_number]
 
