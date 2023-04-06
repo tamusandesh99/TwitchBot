@@ -1,0 +1,11 @@
+# fly.toml file generated for twitch-bot-sandesh on 2023-04-06T13:59:56-04:00
+
+app = "twitch-bot-sandesh"
+kill_signal = "SIGINT"
+kill_timeout = 5
+primary_region = "bos"
+processes = []
+
+[env]
+
+

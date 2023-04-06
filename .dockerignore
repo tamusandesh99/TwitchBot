@@ -1,0 +1,12 @@
+# flyctl launch added from .gitignore
+**/.env
+**/config.py
+**/__pycache__
+**/.ipynb_checkpoints
+**/Pipfile.lock
+
+# flyctl launch added from .idea/.gitignore
+# Default ignored files
+.idea/shelf
+.idea/workspace.xml
+fly.toml
