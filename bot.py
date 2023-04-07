@@ -21,7 +21,6 @@ def get_count():
         data = json.load(json_file)
         return data['total_run']
 
-
 # @bot.event()
 # async def event_message(ctx):
 #     try:
@@ -116,7 +115,7 @@ async def check(ctx):
 
 # replies with discord link
 @bot.command(name="discord")
-async def check(ctx):
+async def send_discord(ctx):
     print('here')
     await ctx.send("@" + ctx.author.name + " https://discord.gg/dsWZdcWNhW")
 
@@ -131,10 +130,10 @@ async def get_points(ctx):
         send_points = int(users_data[ctx.author.name])
         await ctx.send("@" + ctx.author.name + " Your points: " + str(send_points))
     else:
-        users_data[ctx.author.name] = 100
+        users_data[ctx.author.name] = 30
         with open(configuration.POINTS_FILE, 'w') as json_file:
             json.dump(users_data, json_file, sort_keys=True, indent=4, separators=(',', ': '))
-        await ctx.send("@" + ctx.author.name + "." + " Your points: " + str(100))
+        await ctx.send("@" + ctx.author.name + "." + " Your points: " + str(30))
 
 
 # Rolls dice, 1-6. If it lands odd, point gets divided, even is multiplied
@@ -151,7 +150,7 @@ async def roll_dice(ctx, arg):
 
         if user_point_int < argument_int:
             await ctx.send("@" + ctx.author.name + ". Your total point is: "
-                           + str(int(user_point)) + ". " + "Roll lower.")
+                           + str(int(user_point)) + ". " + "Insufficient points.")
         else:
             calculation = int(arg) * random_roll
             if random_roll % 2 == 1:
@@ -174,36 +173,78 @@ async def roll_dice(ctx, arg):
 
 @bot.command(name='attempts')
 async def sendRun_command(ctx):
-    print("pp")
     await ctx.send('@' + ctx.author.name + ' ' + str(get_count()))
 
 
-@bot.command(name='challenges')
-async def test_command(ctx):
+# gets all the runs completed. Reads runs.json file and grabs all keys then adds them to run_list list
+def get_runs():
+    run_list = []
+    with open('runs.json', 'r') as runs_json:
+        all_runs = json.loads(runs_json.read())
+    for key, value in all_runs.items():
+        run_list.append(key)
+    return run_list
+
+
+# Calls get_runs method then sends all the runs to the chat
+@bot.command(name='runs')
+async def runs(ctx):
+    run_list = get_runs()
     try:
-        await ctx.send("Brett is the god")
+        await ctx.send("Completed runs: " + str(', '.join(run_list)))
+
     except:
         print('error')
 
 
+# Takes the run name and the person who added as an argument then adds them to json file
+def add_run_json(run_name, author):
+    with open('runs.json', 'r') as runs_json:
+        all_runs = json.loads(runs_json.read())
+    all_runs[run_name] = author
+    with open('runs.json', 'w') as runs_json:
+        runs_json.write(json.dumps(all_runs, indent=4))
+
+
+# Takes the run name as an argument then removes it from the json file
+def remove_run_json(run_name):
+    with open('runs.json', 'r') as runs_json:
+        all_runs = json.loads(runs_json.read())
+        del all_runs[run_name]
+    with open('runs.json', 'w') as runs_json:
+        runs_json.write(json.dumps(all_runs, indent=4))
+
+
+# Takes author name and message as argument then calls add_run_json method using those arguments
+@bot.command(name='addrun')
+async def add_run_chat(ctx, *, run_name):
+    add_run_json(run_name, ctx.author.name)
+    await ctx.send('@' + ctx.author.name + ' added ' + '*' + run_name + '*' + ' to the completed run list')
+
+
+# Takes author message as argument then calls remove_run_json method using those arguments
+@bot.command(name='removerun')
+async def remove_run_chat(ctx, *, run_name):
+    remove_run_json(run_name)
+    await ctx.send('@' + ctx.author.name + ' removed ' + '*' + run_name + '*' + ' from the completed run list')
+
+
+fist_list = ['Radagon', 'Maliketh', 'Radahn', 'Margit', 'Morgott']
+
+
 @bot.command(name='fist')
-async def test_command(ctx):
-    await ctx.send("Fisted so far: Radagon, Maliketh, Radahn, Margit, Morgott")
+async def fist(ctx):
+    await ctx.send("Fisted so far: " + str(', '.join(fist_list)))
 
 
 @bot.command(name='streamMind')
-async def test_command(ctx):
+async def golan(ctx):
     await ctx.send("Yep. Its Golan and she VIP too")
 
 
 @bot.command(name='whoisW')
-async def test_command(ctx):
+async def jake(ctx):
     await ctx.send("Its Jake. W Jake")
-
-
-@bot.command(name='babyname')
-async def test_command(ctx):
-    await ctx.send("Fire Giant")
 
 
 if __name__ == '__main__':
