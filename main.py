@@ -1,5 +1,5 @@
 import json
-import config
+import configuration
 import mss
 import mss.tools
 import time
@@ -45,8 +45,8 @@ def main():
             mss.tools.to_png(sct_img_blade.rgb, sct_img_blade.size, output=output_blade)
 
             #  sending the screenshot to tesseract to convert it to text
-            text_died = pytesseract.image_to_string('./screenshots/died.png', config=myconfig)
-            text_blade = pytesseract.image_to_string('./screenshots/blade.png', config=myconfig)
+            text_died = pytesseract.image_to_string('./screenshots/died.png', configuration=myconfig)
+            text_blade = pytesseract.image_to_string('./screenshots/blade.png', configuration=myconfig)
 
             # Default texts to match with screenshot texts
             dialogues = ['Malenia', 'Blade', 'Miquella',
@@ -75,7 +75,7 @@ def main():
 
 def get_count():
     """ Reads the count from the JSON file and returns it """
-    with open(config.JSON_FILE) as json_file:
+    with open(configuration.JSON_FILE) as json_file:
         data = json.load(json_file)
         return data['total_run']
 
@@ -84,14 +84,14 @@ def update_count(count):
     """ Updates the JSON file with count given """
     data = None
 
-    with open(config.JSON_FILE) as json_file:
+    with open(configuration.JSON_FILE) as json_file:
         data = json.load(json_file)
 
     if data is not None:
         data['total_run'] = count
         data['send_run'] = True
 
-    with open(config.JSON_FILE, 'w') as json_file:
+    with open(configuration.JSON_FILE, 'w') as json_file:
         json.dump(data, json_file, sort_keys=True, indent=4)
 
 

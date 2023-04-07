@@ -1,46 +1,43 @@
 import json
 from twitchio.ext import commands
-import config
+import configuration
 import random
-import BotLoop
-import time
-import requests
-from twitchAPI import Twitch
+
 
 """ Initializing the bot """
 bot = commands.Bot(
-    token=config.TMI_TOKEN,
-    client_id=config.CLIENT_ID,
-    nick=config.BOT_NICK,
-    prefix=config.BOT_PREFIX,
-    initial_channels=[config.CHANNEL],
+    token=configuration.TMI_TOKEN,
+    client_id=configuration.CLIENT_ID,
+    nick=configuration.BOT_NICK,
+    prefix=configuration.BOT_PREFIX,
+    initial_channels=[configuration.CHANNEL],
 )
 
 
 # gets run count from json file
 def get_count():
     """ Reads the count from the JSON file and returns it """
-    with open(config.JSON_FILE) as json_file:
+    with open(configuration.JSON_FILE) as json_file:
         data = json.load(json_file)
         return data['total_run']
 
 
-@bot.event()
-async def event_message(ctx):
-    try:
-        print(ctx.author.name + ": " + ctx.content)
-    except:
-        await bot.handle_commands(ctx)
+# @bot.event()
+# async def event_message(ctx):
+#     try:
+#         print(ctx.author.name + ": " + ctx.content)
+#     except:
+#         await bot.handle_commands(ctx)
 
 
 # Stops the loop in BotLoop file. Stops sending messages
 @bot.command(name="stop")
 async def stop_loop(ctx):
     if ctx.author.name == 'boco6969':
-        with open(config.JSON_FILE) as json_file:
+        with open(configuration.JSON_FILE) as json_file:
             check_status_of_loop = json.load(json_file)
         check_status_of_loop['stop_loop'] = True
-        with open(config.JSON_FILE, 'w') as json_file:
+        with open(configuration.JSON_FILE, 'w') as json_file:
             json.dump(check_status_of_loop, json_file, sort_keys=True, indent=4)
         print("loop stopped")
 
@@ -49,10 +46,10 @@ async def stop_loop(ctx):
 @bot.command(name="start")
 async def start_loop(ctx):
     if ctx.author.name == 'boco6969':
-        with open(config.JSON_FILE) as json_file:
+        with open(configuration.JSON_FILE) as json_file:
             check_status_of_loop = json.load(json_file)
         check_status_of_loop['stop_loop'] = False
-        with open(config.JSON_FILE, 'w') as json_file:
+        with open(configuration.JSON_FILE, 'w') as json_file:
             json.dump(check_status_of_loop, json_file, sort_keys=True, indent=4)
         print("loop start")
 
@@ -62,10 +59,10 @@ async def start_loop(ctx):
 async def increment_count(ctx, increment_run):
     if ctx.author.name == 'boco6969':
         current_run = get_count()
-        with open(config.JSON_FILE) as json_file:
+        with open(configuration.JSON_FILE) as json_file:
             modify_run = json.load(json_file)
         modify_run['total_run'] = current_run + int(increment_run)
-        with open(config.JSON_FILE, 'w') as json_file:
+        with open(configuration.JSON_FILE, 'w') as json_file:
             json.dump(modify_run, json_file, sort_keys=True, indent=4)
         await ctx.send("@boco6969" + ' ' + "count added by " + increment_run + ". " + "Was: " + str(current_run)
                        + " Now: " + str(get_count()))
@@ -76,10 +73,10 @@ async def increment_count(ctx, increment_run):
 async def decrement_count(ctx, decrement_run):
     if ctx.author.name == 'boco6969':
         current_run = get_count()
-        with open(config.JSON_FILE) as json_file:
+        with open(configuration.JSON_FILE) as json_file:
             modify_run = json.load(json_file)
         modify_run['total_run'] = current_run - int(decrement_run)
-        with open(config.JSON_FILE, 'w') as json_file:
+        with open(configuration.JSON_FILE, 'w') as json_file:
             json.dump(modify_run, json_file, sort_keys=True, indent=4)
         await ctx.send("@boco6969" + ' ' + "count subtracted by " + decrement_run + ". " + "Was: " + str(current_run)
                        + " Now: " + str(get_count()))
@@ -96,12 +93,12 @@ async def rules(ctx):
 @bot.command(name="add")
 async def addPoints(ctx, user_name, points):
     if ctx.author.name == 'boco6969':
-        with open(config.POINTS_FILE) as json_file:
+        with open(configuration.POINTS_FILE) as json_file:
             users_data = json.load(json_file)
         if user_name in users_data:
             add_points = int(users_data[user_name]) + int(points)
             users_data[user_name] = add_points
-            with open(config.POINTS_FILE, 'w') as json_file:
+            with open(configuration.POINTS_FILE, 'w') as json_file:
                 json.dump(users_data, json_file, sort_keys=True, indent=4, separators=(',', ': '))
             await ctx.send("Added " + points + " points to " + "@" + user_name)
         else:
@@ -117,10 +114,17 @@ async def check(ctx):
     await ctx.send("@" + ctx.author.name + " Im here")
 
 
+# replies with discord link
+@bot.command(name="discord")
+async def check(ctx):
+    print('here')
+    await ctx.send("@" + ctx.author.name + " https://discord.gg/dsWZdcWNhW")
+
+
 # Gets the points for the users that used the points command with the prefix
 @bot.command(name="points")
 async def get_points(ctx):
-    with open(config.POINTS_FILE) as json_file:
+    with open(configuration.POINTS_FILE) as json_file:
         users_data = json.load(json_file)
     if ctx.author.name in users_data:
         print(users_data[ctx.author.name])
@@ -128,7 +132,7 @@ async def get_points(ctx):
         await ctx.send("@" + ctx.author.name + " Your points: " + str(send_points))
     else:
         users_data[ctx.author.name] = 100
-        with open(config.POINTS_FILE, 'w') as json_file:
+        with open(configuration.POINTS_FILE, 'w') as json_file:
             json.dump(users_data, json_file, sort_keys=True, indent=4, separators=(',', ': '))
         await ctx.send("@" + ctx.author.name + "." + " Your points: " + str(100))
 
@@ -136,7 +140,7 @@ async def get_points(ctx):
 # Rolls dice, 1-6. If it lands odd, point gets divided, even is multiplied
 @bot.command(name="roll")
 async def roll_dice(ctx, arg):
-    with open(config.POINTS_FILE) as json_file:
+    with open(configuration.POINTS_FILE) as json_file:
         users_data = json.load(json_file)
     if ctx.author.name in users_data:
         user_point = users_data[ctx.author.name]
@@ -157,7 +161,7 @@ async def roll_dice(ctx, arg):
             if user_point < 0:
                 user_point = 0
             users_data[ctx.author.name] = user_point
-        with open(config.POINTS_FILE, 'w') as json_file:
+        with open(configuration.POINTS_FILE, 'w') as json_file:
             json.dump(users_data, json_file, sort_keys=True, indent=4, separators=(',', ': '))
         profit = user_point - temporary_points
         await ctx.send(
