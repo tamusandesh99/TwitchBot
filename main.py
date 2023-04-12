@@ -45,14 +45,14 @@ def main():
             mss.tools.to_png(sct_img_blade.rgb, sct_img_blade.size, output=output_blade)
 
             #  sending the screenshot to tesseract to convert it to text
-            text_died = pytesseract.image_to_string('./screenshots/died.png', configuration=myconfig)
-            text_blade = pytesseract.image_to_string('./screenshots/blade.png', configuration=myconfig)
+            text_died = pytesseract.image_to_string('./screenshots/died.png', config=myconfig)
+            text_blade = pytesseract.image_to_string('./screenshots/blade.png', config=myconfig)
 
             # Default texts to match with screenshot texts
             dialogues = ['Malenia', 'Blade', 'Miquella',
                          'Flesh', 'Your', 'consumed',
                          'scarlet', 'rot', 'Let']
-            deathMark = ['YOU', 'DIED']
+            deathMark = ['YOU', 'DIED' 'IED']
 
             #  Compares if the texts in screenshot matches with default condition text
             if any([word in text_blade for word in dialogues]):
