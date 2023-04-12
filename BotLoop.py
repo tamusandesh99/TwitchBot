@@ -53,6 +53,7 @@ async def event_ready():
 # this runs in infinite loop. Checks weather to send the run count on chat or not from json file """
 @bot.event()
 async def event_ready():
+    # Malenia run stop at 653
     while True:
         if not stop_loop():
             print("bot is running")
