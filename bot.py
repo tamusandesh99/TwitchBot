@@ -84,8 +84,7 @@ async def decrement_count(ctx, decrement_run):
 # Returns the rules for roll commands
 @bot.command(name="rules")
 async def rules(ctx):
-    await ctx.send("Rules are simple: if you roll odd, your points get divided. If even then multiplied. You start "
-                   "with 100")
+    await ctx.send("Rules are simple: if you roll odd, your points get divided. If even then multiplied" )
 
 
 # Mod can add points to the users in chat
@@ -229,7 +228,7 @@ async def remove_run_chat(ctx, *, run_name):
     await ctx.send('@' + ctx.author.name + ' removed ' + '*' + run_name + '*' + ' from the completed run list')
 
 
-fist_list = ['Radagon', 'Maliketh', 'Radahn', 'Margit', 'Morgott']
+fist_list = ['Radagon the Golden Order', 'Maliketh the black blade', 'Starscourage Radahn', 'Margit the Fell Omen', 'Morgott the Omen King', 'Mogh the Omen', 'Godfrey First Elden Lord']
 
 
 @bot.command(name='fist')
