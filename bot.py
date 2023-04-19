@@ -1,8 +1,11 @@
 import json
-from twitchio.ext import commands
-import configuration
 import random
 
+from twitchio.ext import commands
+from pymongo.mongo_client import MongoClient
+import configuration
+import requests
+import datetime
 
 """ Initializing the bot """
 bot = commands.Bot(
@@ -14,19 +17,22 @@ bot = commands.Bot(
 )
 
 
+# Connecting to mongodb atlas database
+uri = "mongodb+srv://" + configuration.MONGODB_USERNAME + ":" + configuration.MONGODB_PASSWORD + \
+          "@twitch.5dlmhjq.mongodb.net/?retryWrites=true&w=majority"
+# Create a new client and connect to the server
+client = MongoClient(uri)
+my_database = client.Twitch
+all_runs = my_database.Runs
+all_users = my_database.points
+
+
 # gets run count from json file
 def get_count():
     """ Reads the count from the JSON file and returns it """
     with open(configuration.JSON_FILE) as json_file:
         data = json.load(json_file)
         return data['total_run']
-
-# @bot.event()
-# async def event_message(ctx):
-#     try:
-#         print(ctx.author.name + ": " + ctx.content)
-#     except:
-#         await bot.handle_commands(ctx)
 
 
 # Stops the loop in BotLoop file. Stops sending messages
@@ -81,30 +87,6 @@ async def decrement_count(ctx, decrement_run):
                        + " Now: " + str(get_count()))
 
 
-# Returns the rules for roll commands
-@bot.command(name="rules")
-async def rules(ctx):
-    await ctx.send("Rules are simple: if you roll odd, your points get divided. If even then multiplied" )
-
-
-# Mod can add points to the users in chat
-@bot.command(name="add")
-async def addPoints(ctx, user_name, points):
-    if ctx.author.name == 'boco6969':
-        with open(configuration.POINTS_FILE) as json_file:
-            users_data = json.load(json_file)
-        if user_name in users_data:
-            add_points = int(users_data[user_name]) + int(points)
-            users_data[user_name] = add_points
-            with open(configuration.POINTS_FILE, 'w') as json_file:
-                json.dump(users_data, json_file, sort_keys=True, indent=4, separators=(',', ': '))
-            await ctx.send("Added " + points + " points to " + "@" + user_name)
-        else:
-            await ctx.send(user_name + " is not in the database boss")
-    else:
-        await ctx.send("@" + ctx.author.name + " You are not Boco")
-
-
 # Checks if the bot is connected to the chat
 @bot.command(name="check")
 async def check(ctx):
@@ -115,59 +97,76 @@ async def check(ctx):
 # replies with discord link
 @bot.command(name="discord")
 async def send_discord(ctx):
-    print('here')
     await ctx.send("@" + ctx.author.name + " https://discord.gg/dsWZdcWNhW")
 
 
 # Gets the points for the users that used the points command with the prefix
 @bot.command(name="points")
 async def get_points(ctx):
-    with open(configuration.POINTS_FILE) as json_file:
-        users_data = json.load(json_file)
-    if ctx.author.name in users_data:
-        print(users_data[ctx.author.name])
-        send_points = int(users_data[ctx.author.name])
+    query = {'user': ctx.author.name}
+    find_user = all_users.find_one(query)
+    if find_user:
+        send_points = find_user['points']
         await ctx.send("@" + ctx.author.name + " Your points: " + str(send_points))
     else:
-        users_data[ctx.author.name] = 30
-        with open(configuration.POINTS_FILE, 'w') as json_file:
-            json.dump(users_data, json_file, sort_keys=True, indent=4, separators=(',', ': '))
-        await ctx.send("@" + ctx.author.name + "." + " Your points: " + str(30))
+        new_user = {
+            'user': ctx.author.name,
+            'points': '100'
+        }
+        all_users.insert_one(new_user)
+        await ctx.send("@" + ctx.author.name + "." + " Your points: " + str(100))
 
 
 # Rolls dice, 1-6. If it lands odd, point gets divided, even is multiplied
 @bot.command(name="roll")
 async def roll_dice(ctx, arg):
-    with open(configuration.POINTS_FILE) as json_file:
-        users_data = json.load(json_file)
-    if ctx.author.name in users_data:
-        user_point = users_data[ctx.author.name]
-        temporary_points = user_point  # Assigning original points to temp before I change the points
+    query = {'user': ctx.author.name}
+    find_user = all_users.find_one(query)
+    if find_user:
+        user_points = find_user['points']
+        temporary_points = user_points  # Assigning original points to temp before I change the points
         random_roll = random.randint(1, 6)
-        user_point_int = int(user_point)
+        user_point_int = int(user_points)
         argument_int = int(arg)
 
         if user_point_int < argument_int:
             await ctx.send("@" + ctx.author.name + ". Your total point is: "
-                           + str(int(user_point)) + ". " + "Insufficient points.")
+                           + user_points + ". " + "Insufficient points.")
         else:
             calculation = int(arg) * random_roll
             if random_roll % 2 == 1:
-                user_point = user_point + calculation
+                user_points = int(user_points) + calculation
             else:
-                user_point = user_point - calculation
-            if user_point < 0:
-                user_point = 0
-            users_data[ctx.author.name] = user_point
-        with open(configuration.POINTS_FILE, 'w') as json_file:
-            json.dump(users_data, json_file, sort_keys=True, indent=4, separators=(',', ': '))
-        profit = user_point - temporary_points
+                user_points = int(user_points) - calculation
+            if user_points < 0:
+                user_points = 0
+            new_points = {"$set": {"points": str(user_points)}}
+            all_users.update_one(query, new_points)
+        profit = int(user_points) - int(temporary_points)
         await ctx.send(
-            "@" + ctx.author.name + " rolled dice " + str(random_roll) + "." + " Profit: " + str(int(profit)) +
+            "@" + ctx.author.name + " rolled dice " + str(random_roll) + "." + " Profit: " + str(profit) +
             "." + " Total points: " +
-            str(int(users_data[ctx.author.name])))
+            str(user_points))
     else:
         await ctx.send("@" + ctx.author.name + "." + " You don't have points. Do !points to add points")
+
+
+# Mod can add points to the users in chat
+@bot.command(name="add")
+async def addPoints(ctx, user_name, points):
+    if ctx.author.name == 'boco6969':
+        query = {'user': user_name}
+        find_user = all_users.find_one(query)
+        if find_user:
+            user_points = find_user['points']
+            add_points = int(user_points) + int(points)
+            new_points = {"$set": {"points": str(add_points)}}
+            all_users.update_one(query, new_points)
+            await ctx.send("Added " + points + " points to " + "@" + user_name)
+        else:
+            await ctx.send(user_name + " is not in the database boss")
+    else:
+        await ctx.send("@" + ctx.author.name + " You are not Boco")
 
 
 @bot.command(name='attempts')
@@ -176,59 +175,71 @@ async def sendRun_command(ctx):
 
 
 # gets all the runs completed. Reads runs.json file and grabs all keys then adds them to run_list list
-def get_runs():
-    run_list = []
-    with open('runs.json', 'r') as runs_json:
-        all_runs = json.loads(runs_json.read())
-    for key, value in all_runs.items():
-        run_list.append(key)
-    return run_list
+# def get_runs():
+#     run_list = list(runs.distinct("run_name"))
+#     with open('runs.json', 'r') as runs_json:
+#         all_runs = json.loads(runs_json.read())
+#     for key, value in all_runs.items():
+#         run_list.append(key)
+#     return run_list
 
 
-# Calls get_runs method then sends all the runs to the chat
+# Gets all the runs from database and sends it to chat
 @bot.command(name='runs')
 async def runs(ctx):
-    run_list = get_runs()
+    run_list = list(all_runs.distinct("run_name"))
+    sorted_values = sorted(run_list, key=lambda x: all_runs.find_one({"run_name": x})["_id"], reverse=False)
     try:
-        await ctx.send("Completed runs: " + str(', '.join(run_list)))
+        await ctx.send("Completed runs: " + str(', '.join(sorted_values)))
 
     except:
         print('error')
 
 
-# Takes the run name and the person who added as an argument then adds them to json file
-def add_run_json(run_name, author):
-    with open('runs.json', 'r') as runs_json:
-        all_runs = json.loads(runs_json.read())
-    all_runs[run_name] = author
-    with open('runs.json', 'w') as runs_json:
-        runs_json.write(json.dumps(all_runs, indent=4))
-
-
-# Takes the run name as an argument then removes it from the json file
-def remove_run_json(run_name):
-    with open('runs.json', 'r') as runs_json:
-        all_runs = json.loads(runs_json.read())
-        del all_runs[run_name]
-    with open('runs.json', 'w') as runs_json:
-        runs_json.write(json.dumps(all_runs, indent=4))
-
-
-# Takes author name and message as argument then calls add_run_json method using those arguments
+# Takes author name and message as argument then adds new object to the database using those arguments
 @bot.command(name='addrun')
 async def add_run_chat(ctx, *, run_name):
-    add_run_json(run_name, ctx.author.name)
-    await ctx.send('@' + ctx.author.name + ' added ' + '*' + run_name + '*' + ' to the completed run list')
+    query = {'run_name': run_name}
+    find_run = all_runs.find_one(query)
+    new_run = {
+        'run_name': run_name,
+        'added_by': ctx.author.name
+    }
+    if find_run:
+        await ctx.send("@"+ctx.author.name + ' That run is already in the list')
+    else:
+        all_runs.insert_one(new_run)
+        await ctx.send('@' + ctx.author.name + ' added ' + '*' + run_name + '*' + ' to the completed run list')
 
 
-# Takes author message as argument then calls remove_run_json method using those arguments
+# Takes author message as argument then remove object from database
 @bot.command(name='removerun')
 async def remove_run_chat(ctx, *, run_name):
-    remove_run_json(run_name)
-    await ctx.send('@' + ctx.author.name + ' removed ' + '*' + run_name + '*' + ' from the completed run list')
+    filter_run = {'run_name': run_name}
+    find_run = all_runs.find_one(filter_run)
+    if find_run:
+        all_runs.delete_one(filter_run)
+        await ctx.send('@' + ctx.author.name + ' removed ' + '*' + run_name + '*' + ' from the completed run list')
+    else:
+        await ctx.send('@' + ctx.author.name + ' No such run in the list')
 
 
-fist_list = ['Radagon the Golden Order', 'Maliketh the black blade', 'Starscourage Radahn', 'Margit the Fell Omen', 'Morgott the Omen King', 'Mogh the Omen', 'Godfrey First Elden Lord']
+# Calls dadjoke api and sends it to the chat when command is called
+@bot.command(name='dadjoke')
+async def dad_joke(ctx):
+    joke_url = "https://icanhazdadjoke.com/"
+    headers = {"Accept": "text/plain"}
+    response = requests.get(joke_url, headers=headers)
+    joke_text = response.text
+    await ctx.send("@" + ctx.author.name + ' ' + joke_text)
+
+
+@bot.command(name='commands')
+async def all_commands(ctx):
+    await ctx.send('!runs', '!discord', '!addrun', '!removerun', '!points', '!fist', '!roll', '!check')
+
+
+fist_list = ['Radagon', 'Maliketh', ' Radahn', 'Margit', 'Morgott', 'Mogh', 'Godfrey']
 
 
 @bot.command(name='fist')
@@ -236,7 +247,7 @@ async def fist(ctx):
     await ctx.send("Fisted so far: " + str(', '.join(fist_list)))
 
 
-@bot.command(name='streamMind')
+@bot.command(name='wiki')
 async def golan(ctx):
     await ctx.send("Yep. Its Golan and she VIP too")
 
