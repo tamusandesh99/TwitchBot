@@ -5,7 +5,7 @@ from twitchio.ext import commands
 from pymongo.mongo_client import MongoClient
 import configuration
 import requests
-import datetime
+
 
 """ Initializing the bot """
 bot = commands.Bot(
