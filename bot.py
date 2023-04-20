@@ -234,9 +234,9 @@ async def dad_joke(ctx):
     await ctx.send("@" + ctx.author.name + ' ' + joke_text)
 
 
-@bot.command(name='commands')
+@bot.command(name='list')
 async def all_commands(ctx):
-    await ctx.send('!runs', '!discord', '!addrun', '!removerun', '!points', '!fist', '!roll', '!check')
+    await ctx.send('!dadjoke', '!discord', '!runs ',  '!addrun', '!removerun', '!points', '!fist', '!roll', '!check')
 
 
 fist_list = ['Radagon', 'Maliketh', ' Radahn', 'Margit', 'Morgott', 'Mogh', 'Godfrey']
