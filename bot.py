@@ -1,6 +1,7 @@
 import json
 import random
 
+import asyncio
 from twitchio.ext import commands
 from pymongo.mongo_client import MongoClient
 import configuration
@@ -25,6 +26,7 @@ client = MongoClient(uri)
 my_database = client.Twitch
 all_runs = my_database.Runs
 all_users = my_database.points
+all_quiz = my_database.quiz
 
 
 # gets run count from json file
@@ -222,6 +224,68 @@ async def remove_run_chat(ctx, *, run_name):
         await ctx.send('@' + ctx.author.name + ' removed ' + '*' + run_name + '*' + ' from the completed run list')
     else:
         await ctx.send('@' + ctx.author.name + ' No such run in the list')
+
+
+chat_question = ''
+chat_answer = ''
+is_emptying_chat_question = False
+
+
+@bot.command(name='quizme')
+async def quiz_me(ctx):
+    global chat_question
+    global is_emptying_chat_question
+    # asyncio.create_task(empty_chat_question())
+    if len(chat_question) == 0:
+        all_questions = list(all_quiz.distinct("question"))
+        random_question = random.choice(all_questions)
+        quiz_answer = all_quiz.find_one({"question": random_question}, {"answer": 1})["answer"]
+        global chat_answer
+        chat_question = random_question
+        chat_answer = quiz_answer.lower().strip()
+        print(chat_question)
+        print(chat_answer)
+        await ctx.send("Question: " + random_question)
+
+        if not is_emptying_chat_question:
+            is_emptying_chat_question = True
+            asyncio.create_task(empty_chat_question())
+
+    else:
+        await ctx.send("Question: " + chat_question)
+
+
+async def empty_chat_question():
+    await asyncio.sleep(60)
+    global chat_question
+    global is_emptying_chat_question
+    chat_question = ''
+    print('chat_question has been emptied')
+    s_emptying_chat_question = False
+
+
+@bot.command(name='answer')
+async def quiz_me(ctx, *, user_answer):
+    global chat_answer
+    if user_answer.strip().lower() == chat_answer.strip():
+        query_user = {'user': ctx.author.name}
+        query_question = {'question': chat_question}
+        find_user = all_users.find_one(query_user)
+        find_question = all_quiz.find_one(query_question)
+        # all_quiz.update_one(find_question, {"$set": {"answered": True}})
+        if find_user:
+            user_points = find_user['points']
+            add_points = int(user_points) + 10
+            new_points = {"$set": {"points": str(add_points)}}
+            all_users.update_one(query_user, new_points)
+            await ctx.send("@" + ctx.author.name + " Correct. Added 10 points to you")
+        else:
+            new_user = {
+                'user': ctx.author.name,
+                'points': '110'
+            }
+            all_users.insert_one(new_user)
+            await ctx.send("@" + ctx.author.name + " Correct. Added 10 points to you")
 
 
 # Calls dadjoke api and sends it to the chat when command is called
