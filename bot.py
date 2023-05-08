@@ -190,11 +190,18 @@ async def sendRun_command(ctx):
 async def runs(ctx):
     run_list = list(all_runs.distinct("run_name"))
     sorted_values = sorted(run_list, key=lambda x: all_runs.find_one({"run_name": x})["_id"], reverse=False)
-    try:
-        await ctx.send("Completed runs: " + str(', '.join(sorted_values)))
-
-    except:
-        print('error')
+    message = "Completed runs: " + str(', '.join(sorted_values))
+    if len(message) <= 500:
+        try:
+            await ctx.send(message)
+        except:
+            print('Error')
+    else:
+        try:
+            await ctx.send("Completed runs (part 1): " + str(', '.join(sorted_values[:len(sorted_values) // 2])))
+            await ctx.send("Completed runs (part 2): " + str(', '.join(sorted_values[len(sorted_values) // 2:])))
+        except:
+            print('Error')
 
 
 # Takes author name and message as argument then adds new object to the database using those arguments
