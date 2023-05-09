@@ -303,6 +303,7 @@ async def dad_joke(ctx):
     await ctx.send("@" + ctx.author.name + ' ' + joke_text)
 
 
+# Lists all the commands that is available 
 @bot.command(name='commands')
 async def all_commands(ctx):
     await ctx.send('@' + ctx.author.name + ' ' + ' !dadjoke' + ' ' + ' !discord' + ' ' + ' !runs ' + ' ' + ' !addrun' +
