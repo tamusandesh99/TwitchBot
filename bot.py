@@ -2,10 +2,14 @@ import json
 import random
 
 import asyncio
+import time
+import aiohttp
+
 from twitchio.ext import commands
 from pymongo.mongo_client import MongoClient
 import configuration
 import requests
+
 
 """ Initializing the bot """
 bot = commands.Bot(
@@ -232,65 +236,89 @@ async def remove_run_chat(ctx, *, run_name):
         await ctx.send('@' + ctx.author.name + ' No such run in the list')
 
 
-chat_question = ''
-chat_answer = ''
-is_emptying_chat_question = False
+active_question = {
+    "question": None,
+    "answer": None,
+    "asked_by": None
+}
+is_question_active = False
 
 
-@bot.command(name='quizme')
-async def quiz_me(ctx):
-    global chat_question
-    global is_emptying_chat_question
-    if not is_emptying_chat_question:
-        is_emptying_chat_question = True
-        asyncio.create_task(empty_chat_question())
-    if len(chat_question) == 0:
-        all_questions = list(all_quiz.find({"answered": True}, {"question": 1}))
-        random_question = random.choice(all_questions)["question"]
-        quiz_answer = all_quiz.find_one({"question": random_question})["answer"]
-        global chat_answer
-        chat_question = random_question
-        chat_answer = quiz_answer.lower().strip()
-        print(chat_question)
-        print(chat_answer)
-        await ctx.send("Question: " + random_question)
-
+@bot.command(name='quiz')
+async def quiz(ctx, *, user_answer=None):
+    if user_answer is None:
+        await send_question(ctx)
     else:
-        await ctx.send("Question: " + chat_question)
+        await check_answer(ctx, user_answer)
 
 
-async def empty_chat_question():
-    await asyncio.sleep(60)
-    global chat_question
-    global is_emptying_chat_question
-    chat_question = ''
-    print('chat_question has been emptied')
-    is_emptying_chat_question = False
+async def send_question(ctx):
+    global is_question_active
+
+    if is_question_active:
+        # Send the active question to the new user
+        await ctx.send("Question: " + active_question["question"])
+    else:
+        try:
+            question_data = all_quiz.find({"answered": False}, {"question": 1})
+            all_questions = [data["question"] for data in question_data]
+            if all_questions:
+                random_question = random.choice(all_questions)
+                quiz_answer_data = all_quiz.find_one({"question": random_question}, {"answer": 1})
+                quiz_answer = quiz_answer_data["answer"]
+                active_question["question"] = random_question
+                active_question["answer"] = quiz_answer.lower().strip()
+                active_question["asked_by"] = ctx.author.name
+                is_question_active = True
+                await ctx.send("Question: " + random_question)
+            else:
+                await ctx.send("No questions available at the moment.")
+        except Exception as e:
+            await ctx.send("An error occurred while retrieving the question. Please try again later.")
 
 
-@bot.command(name='answer')
-async def quiz_me(ctx, *, user_answer):
-    global chat_answer
-    if user_answer.strip().lower() == chat_answer.strip():
-        asyncio.create_task(empty_chat_question())
-        query_user = {'user': ctx.author.name}
-        query_question = {'question': chat_question}
-        find_user = all_users.find_one(query_user)
-        find_question = all_quiz.find_one(query_question)
-        all_quiz.update_one(find_question, {"$set": {"answered": False}})
-        if find_user:
-            user_points = find_user['points']
-            add_points = int(user_points) + 10
-            new_points = {"$set": {"points": str(add_points)}}
-            all_users.update_one(query_user, new_points)
-            await ctx.send("@" + ctx.author.name + " Correct. Added 10 points to you")
-        else:
-            new_user = {
-                'user': ctx.author.name,
-                'points': '110'
-            }
-            all_users.insert_one(new_user)
-            await ctx.send("@" + ctx.author.name + " Correct. Added 10 points to you")
+async def check_answer(ctx, user_answer):
+    global is_question_active
+
+    if not is_question_active:
+        await ctx.send("No question is currently active.")
+        return
+
+    user_answer = user_answer.strip().lower()
+    if user_answer == active_question["answer"]:
+        await update_user_points(ctx.author.name)
+        await ctx.send("@" + ctx.author.name + " Correct answer! Added 10 points.")
+        await mark_question_answered(active_question["question"])
+    else:
+        await ctx.send("@" + ctx.author.name + " Incorrect answer.")
+
+    is_question_active = False
+    active_question["question"] = None
+    active_question["answer"] = None
+    active_question["asked_by"] = None
+
+
+# Update the user points from the database. 
+async def update_user_points(username):
+    query_user = {'user': username}
+    find_user = all_users.find_one(query_user)
+    if find_user:
+        user_points = find_user['points']
+        add_points = int(user_points) + 10
+        new_points = {"$set": {"points": str(add_points)}}
+        all_users.update_one(query_user, new_points)
+    else:
+        new_user = {
+            'user': username,
+            'points': '110'
+        }
+        all_users.insert_one(new_user)
+
+
+async def mark_question_answered(question):
+    set_question_as_answered = all_quiz.find_one({"question": question}, {"answered": 1})
+    set_answered_true = {"$set": {"answered": True}}
+    all_quiz.update_one(set_question_as_answered, set_answered_true)
 
 
 # Calls dadjoke api and sends it to the chat when command is called
@@ -303,7 +331,7 @@ async def dad_joke(ctx):
     await ctx.send("@" + ctx.author.name + ' ' + joke_text)
 
 
-# Lists all the commands that is available 
+# Lists all the commands that is available
 @bot.command(name='commands')
 async def all_commands(ctx):
     await ctx.send('@' + ctx.author.name + ' ' + ' !dadjoke' + ' ' + ' !discord' + ' ' + ' !runs ' + ' ' + ' !addrun' +

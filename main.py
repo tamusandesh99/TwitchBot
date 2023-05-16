@@ -49,19 +49,21 @@ def main():
             text_blade = pytesseract.image_to_string('./screenshots/blade.png', config=myconfig)
 
             # Default texts to match with screenshot texts
+            # Malenia: 653
+            # Firegiant: 14
             dialogues = ['Malenia', 'Blade', 'Miquella',
                          'Flesh', 'Your', 'consumed',
                          'scarlet', 'rot', 'Let']
-            deathMark = ['YOU', 'DIED' 'IED']
+            deathMark = ['YOU', 'DIED' 'IED', 'OU']
 
             #  Compares if the texts in screenshot matches with default condition text
-            if any([word in text_blade for word in dialogues]):
-                print("Blade")
-                print(text_blade)
-                time.sleep(3)
-                total_run += 1
-                update_count(total_run)  # update the value in json if conditions met
-                time.sleep(9)
+            # if any([word in text_blade for word in dialogues]):
+            #     print("Blade")
+            #     print(text_blade)
+            #     time.sleep(3)
+            #     total_run += 1
+            #     update_count(total_run)  # update the value in json if conditions met
+            #     time.sleep(9)
 
             if any([word in text_died for word in deathMark]):
                 print('Died')
@@ -70,7 +72,8 @@ def main():
                 total_run += 1
                 update_count(total_run)  # update the value in json if conditions met
                 time.sleep(8)
-            print(total_run)
+            print(text_died)
+            # print(total_run)
 
 
 def get_count():
