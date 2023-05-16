@@ -277,6 +277,7 @@ async def send_question(ctx):
             await ctx.send("An error occurred while retrieving the question. Please try again later.")
 
 
+# Checks if the answer is correct when the user answers
 async def check_answer(ctx, user_answer):
     global is_question_active
 
@@ -285,7 +286,10 @@ async def check_answer(ctx, user_answer):
         return
 
     user_answer = user_answer.strip().lower()
-    if user_answer == active_question["answer"]:
+    user_answer_words = user_answer.split()
+
+    is_correct_answer = any(word in active_question["answer"] for word in user_answer_words)
+    if is_correct_answer:
         await update_user_points(ctx.author.name)
         await ctx.send("@" + ctx.author.name + " Correct answer! Added 10 points.")
         await mark_question_answered(active_question["question"])
@@ -298,7 +302,7 @@ async def check_answer(ctx, user_answer):
     active_question["asked_by"] = None
 
 
-# Update the user points from the database. 
+# Update the user points from the database.
 async def update_user_points(username):
     query_user = {'user': username}
     find_user = all_users.find_one(query_user)
@@ -315,6 +319,7 @@ async def update_user_points(username):
         all_users.insert_one(new_user)
 
 
+#  Updates the status on database. If the question has been answered then it will not be repeated
 async def mark_question_answered(question):
     set_question_as_answered = all_quiz.find_one({"question": question}, {"answered": 1})
     set_answered_true = {"$set": {"answered": True}}
