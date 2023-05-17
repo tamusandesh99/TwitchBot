@@ -270,10 +270,10 @@ async def send_question(ctx):
                 active_question["answer"] = quiz_answer.lower().strip()
                 active_question["asked_by"] = ctx.author.name
                 is_question_active = True
-                await ctx.send("Question: " + random_question)
+                await ctx.send("Question: " + random_question + " *do !quiz answer* to answer")
             else:
                 await ctx.send("No questions available at the moment.")
-                # Here write a method to make all the questions in the database set to false. 
+                # Here write a method to make all the questions in the database set to false.
         except Exception as e:
             await ctx.send("An error occurred while retrieving the question. Please try again later.")
 
