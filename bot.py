@@ -273,6 +273,7 @@ async def send_question(ctx):
                 await ctx.send("Question: " + random_question)
             else:
                 await ctx.send("No questions available at the moment.")
+                # Here write a method to make all the questions in the database set to false. 
         except Exception as e:
             await ctx.send("An error occurred while retrieving the question. Please try again later.")
 
