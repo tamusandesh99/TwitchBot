@@ -1,15 +1,8 @@
-import json
 import random
-
-import asyncio
-import time
-import aiohttp
-
 from twitchio.ext import commands
 from pymongo.mongo_client import MongoClient
 import configuration
 import requests
-
 
 """ Initializing the bot """
 bot = commands.Bot(
@@ -22,7 +15,7 @@ bot = commands.Bot(
 
 # Connecting to mongodb atlas database
 uri = "mongodb+srv://" + configuration.MONGODB_USERNAME + ":" + configuration.MONGODB_PASSWORD + \
-          "@twitch.5dlmhjq.mongodb.net/?retryWrites=true&w=majority"
+      "@twitch.5dlmhjq.mongodb.net/?retryWrites=true&w=majority"
 # Create a new client and connect to the server
 client = MongoClient(uri)
 my_database = client.Twitch
@@ -169,7 +162,7 @@ async def add_run_chat(ctx, *, run_name):
         'added_by': ctx.author.name
     }
     if find_run:
-        await ctx.send("@"+ctx.author.name + ' That run is already in the list')
+        await ctx.send("@" + ctx.author.name + ' That run is already in the list')
     else:
         all_runs.insert_one(new_run)
         await ctx.send('@' + ctx.author.name + ' added ' + '*' + run_name + '*' + ' to the completed run list')
