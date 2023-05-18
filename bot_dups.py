@@ -31,21 +31,64 @@ all_users = my_database.points
 all_quiz = my_database.quiz
 
 
-@bot.event()
-async def event_message(ctx):
-    query_user = {'user': ctx.author.name}
-    find_user = all_users.find_one(query_user)
-    if find_user:
-        user_points = find_user['points']
-        add_points = int(user_points) + 2
-        new_points = {"$set": {"points": str(add_points)}}
-        all_users.update_one(query_user, new_points)
-    else:
-        new_user = {
-            'user': ctx.author.name,
-            'points': '10'
-        }
-        all_users.insert_one(new_user)
+# gets run count from json file
+def get_count():
+    """ Reads the count from the JSON file and returns it """
+    with open(configuration.JSON_FILE) as json_file:
+        data = json.load(json_file)
+        return data['total_run']
+
+
+# Stops the loop in BotLoop file. Stops sending messages
+@bot.command(name="stop")
+async def stop_loop(ctx):
+    if ctx.author.name == 'boco6969':
+        with open(configuration.JSON_FILE) as json_file:
+            check_status_of_loop = json.load(json_file)
+        check_status_of_loop['stop_loop'] = True
+        with open(configuration.JSON_FILE, 'w') as json_file:
+            json.dump(check_status_of_loop, json_file, sort_keys=True, indent=4)
+        print("loop stopped")
+
+
+# starts the loop in BootLoop file for sending message in channel.
+@bot.command(name="start")
+async def start_loop(ctx):
+    if ctx.author.name == 'boco6969':
+        with open(configuration.JSON_FILE) as json_file:
+            check_status_of_loop = json.load(json_file)
+        check_status_of_loop['stop_loop'] = False
+        with open(configuration.JSON_FILE, 'w') as json_file:
+            json.dump(check_status_of_loop, json_file, sort_keys=True, indent=4)
+        print("loop start")
+
+
+# Modifies the total_run in json file by adding the amount user provides
+@bot.command(name="increment")
+async def increment_count(ctx, increment_run):
+    if ctx.author.name == 'boco6969':
+        current_run = get_count()
+        with open(configuration.JSON_FILE) as json_file:
+            modify_run = json.load(json_file)
+        modify_run['total_run'] = current_run + int(increment_run)
+        with open(configuration.JSON_FILE, 'w') as json_file:
+            json.dump(modify_run, json_file, sort_keys=True, indent=4)
+        await ctx.send("@boco6969" + ' ' + "count added by " + increment_run + ". " + "Was: " + str(current_run)
+                       + " Now: " + str(get_count()))
+
+
+# Modifies the total_run in json file by adding the amount user provides
+@bot.command(name="decrement")
+async def decrement_count(ctx, decrement_run):
+    if ctx.author.name == 'boco6969':
+        current_run = get_count()
+        with open(configuration.JSON_FILE) as json_file:
+            modify_run = json.load(json_file)
+        modify_run['total_run'] = current_run - int(decrement_run)
+        with open(configuration.JSON_FILE, 'w') as json_file:
+            json.dump(modify_run, json_file, sort_keys=True, indent=4)
+        await ctx.send("@boco6969" + ' ' + "count subtracted by " + decrement_run + ". " + "Was: " + str(current_run)
+                       + " Now: " + str(get_count()))
 
 
 # Checks if the bot is connected to the chat
@@ -59,16 +102,6 @@ async def check(ctx):
 @bot.command(name="discord")
 async def send_discord(ctx):
     await ctx.send("@" + ctx.author.name + " https://discord.gg/dsWZdcWNhW")
-
-
-# Calls dadjoke api and sends it to the chat when command is called
-@bot.command(name='dadjoke')
-async def dad_joke(ctx):
-    joke_url = "https://icanhazdadjoke.com/"
-    headers = {"Accept": "text/plain"}
-    response = requests.get(joke_url, headers=headers)
-    joke_text = response.text
-    await ctx.send("@" + ctx.author.name + ' ' + joke_text)
 
 
 # Gets the points for the users that used the points command with the prefix
@@ -137,7 +170,22 @@ async def addPoints(ctx, user_name, points):
         else:
             await ctx.send(user_name + " is not in the database boss")
     else:
-        await ctx.send("@" + ctx.author.name + " do !addrun to add run names")
+        await ctx.send("@" + ctx.author.name + " You are not Boco")
+
+
+@bot.command(name='attempts')
+async def sendRun_command(ctx):
+    await ctx.send('@' + ctx.author.name + ' ' + str(get_count()))
+
+
+# gets all the runs completed. Reads runs.json file and grabs all keys then adds them to run_list list
+# def get_runs():
+#     run_list = list(runs.distinct("run_name"))
+#     with open('runs.json', 'r') as runs_json:
+#         all_runs = json.loads(runs_json.read())
+#     for key, value in all_runs.items():
+#         run_list.append(key)
+#     return run_list
 
 
 # Gets all the runs from database and sends it to chat
@@ -254,6 +302,11 @@ async def check_answer(ctx, user_answer):
     active_question["asked_by"] = None
 
 
+@bot.event()
+async def event_message(ctx):
+    print(ctx.author.name)
+
+
 # Update the user points from the database.
 async def update_user_points(username, points_to_add):
     query_user = {'user': username}
@@ -276,6 +329,17 @@ async def mark_question_answered(question):
     set_question_as_answered = all_quiz.find_one({"question": question}, {"answered": 1})
     set_answered_true = {"$set": {"answered": True}}
     all_quiz.update_one(set_question_as_answered, set_answered_true)
+
+
+
+# Calls dadjoke api and sends it to the chat when command is called
+@bot.command(name='dadjoke')
+async def dad_joke(ctx):
+    joke_url = "https://icanhazdadjoke.com/"
+    headers = {"Accept": "text/plain"}
+    response = requests.get(joke_url, headers=headers)
+    joke_text = response.text
+    await ctx.send("@" + ctx.author.name + ' ' + joke_text)
 
 
 # Lists all the commands that is available
