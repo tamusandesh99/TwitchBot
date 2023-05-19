@@ -30,13 +30,13 @@ async def event_message(ctx):
     find_user = all_users.find_one(query_user)
     if find_user:
         user_points = find_user['points']
-        add_points = int(user_points) + 2
+        add_points = int(user_points) + 1
         new_points = {"$set": {"points": str(add_points)}}
         all_users.update_one(query_user, new_points)
     else:
         new_user = {
             'user': ctx.author.name,
-            'points': '10'
+            'points': '15'
         }
         all_users.insert_one(new_user)
 
