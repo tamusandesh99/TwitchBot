@@ -26,6 +26,10 @@ all_quiz = my_database.quiz
 
 @bot.event()
 async def event_message(ctx):
+    if ctx.author.name.lower() == configuration.BOT_NICK.lower():
+        # Ignore the bot's own comments
+        return
+
     query_user = {'user': ctx.author.name}
     find_user = all_users.find_one(query_user)
     if find_user:
