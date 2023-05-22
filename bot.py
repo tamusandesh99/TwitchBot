@@ -201,7 +201,7 @@ async def send_question(ctx):
 
     if is_question_active:
         # Send the active question to the new user
-        await ctx.send("Question: " + active_question["question"])
+        await ctx.send("Question: " + active_question["question"] + "asked by " + active_question["asked_by"])
     else:
         try:
             question_data = all_quiz.find({"answered": False}, {"question": 1})
