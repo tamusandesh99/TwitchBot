@@ -3,6 +3,7 @@ from twitchio.ext import commands
 from pymongo.mongo_client import MongoClient
 import configuration
 import requests
+import time
 
 """ Initializing the bot """
 bot = commands.Bot(
@@ -22,6 +23,11 @@ my_database = client.Twitch
 all_runs = my_database.Runs
 all_users = my_database.points
 all_quiz = my_database.quiz
+
+
+@bot.event()
+async def event_ready():
+    print(f"Connected to {configuration.CHANNEL}")
 
 
 @bot.event()
@@ -301,5 +307,25 @@ async def jake(ctx):
     await ctx.send("Its Jake. W Jake")
 
 
+RECONNECT_DELAY = 10  # Delay in seconds between reconnection attempts
+MAX_RECONNECT_ATTEMPTS = 10  # Maximum number of reconnection attempts
+
+
+# To reconnect to the channel if it fails midway
+def reconnect_bot():
+    reconnect_attempt = 0
+    while reconnect_attempt < MAX_RECONNECT_ATTEMPTS:
+        try:
+            print("Reconnecting...")
+            bot.run()
+        except Exception as e:
+            print(f"Reconnection attempt {reconnect_attempt + 1} failed.")
+            print(f"Error: {e}")
+            reconnect_attempt += 1
+            time.sleep(RECONNECT_DELAY)
+    print(f"Max reconnection attempts reached. Exiting...")
+
+
 if __name__ == '__main__':
-    bot.run()
+    reconnect_bot()
+    # bot.run()
