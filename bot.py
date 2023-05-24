@@ -67,11 +67,20 @@ async def send_discord(ctx):
 # Calls dadjoke api and sends it to the chat when command is called
 @bot.command(name='dadjoke')
 async def dad_joke(ctx):
-    joke_url = "https://icanhazdadjoke.com/"
-    headers = {"Accept": "text/plain"}
-    response = requests.get(joke_url, headers=headers)
-    joke_text = response.text
-    await ctx.send("@" + ctx.author.name + ' ' + joke_text)
+    try:
+        joke_url = "https://icanhazdadjoke.com/"
+        headers = {"Accept": "text/plain"}
+        response = requests.get(joke_url, headers=headers)
+        response.raise_for_status()  # Raises an exception if the request was not successful
+        joke_text = response.text
+        await ctx.send("@" + ctx.author.name + ' ' + joke_text)
+    except requests.RequestException as e:
+        # Handle any request-related exceptions here
+        print("An error occurred during the request:", str(e))
+        await ctx.send("Mind is running blank at the moment")
+    except Exception as e:
+        # Handle any other exceptions that may occur
+        print("An unexpected error occurred:", str(e))
 
 
 # Gets the points for the users that used the points command with the prefix
