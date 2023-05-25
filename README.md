@@ -1,20 +1,32 @@
-Twitch Bot for Elden Ring streamers
+# TwitchBot
 
-This is a Twitch bot written in Python using the twitchio library. The bot is designed to connect to a Twitch channel and perform various actions based on chat commands. It utilizes MongoDB Atlas for storing user points, completed runs, and quiz questions.
+TwitchBot is a Python-based chat bot for Twitch. It provides various features and commands that can be used in Twitch chat.
 
+## Features
 
-Prerequisites
-Before running the bot, make sure you have the following:
+- **Points System**: Assigns points to users in the chat and allows them to check their points.
+- **Dad Jokes**: Retrieves random dad jokes from an API and sends them to the chat.
+- **Dice Roll**: Allows users to roll a dice and win or lose points based on the result.
+- **Command List**: Provides a list of available commands for users to reference.
+- **Runs Tracker**: Manages a list of completed runs and allows users to add or remove runs from the list.
+- **Quiz**: Asks trivia questions and rewards users with points for correct answers.
 
-    Python installed on your machine (version 3.6 or higher)
-    twitchio library installed (pip install twitchio)
-    pymongo library installed (pip install pymongo)
-    MongoDB Atlas account and a cluster set up (for storing data)
+## Installation
 
+1. Clone the repository:
 
-Configuration
+   ```bash
+   git clone https://github.com/tamusandesh99/TwitchBot.git
+
+    Install the required dependencies:
+
+    bash
+
+pip install -r requirements.txt
+
+Set up the configuration file
 The bot requires a configuration file named configuration.py with the following variables:
-
+    
     TMI_TOKEN: Your Twitch chat OAuth token (can be obtained from https://twitchapps.com/tmi/)
     CLIENT_ID: Your Twitch application client ID
     BOT_NICK: The username of your bot account
@@ -23,41 +35,41 @@ The bot requires a configuration file named configuration.py with the following 
     MONGODB_USERNAME: Your MongoDB Atlas database username
     MONGODB_PASSWORD: Your MongoDB Atlas database password
 
-Make sure to replace the placeholder values in configuration.py with your actual credentials. For example
-for CLIENT_ID: "ID"
+Run the bot:
 
-Setup
+bash
 
-    Clone or download the Twitch bot source code to your local machine.
-    Install the required libraries mentioned in the "Prerequisites" section.
-    Create the configuration.py file and set the necessary variables as described in the "Configuration" section.
-    Set up a MongoDB Atlas cluster and obtain the connection URI.
-    Replace the uri variable in the code with your MongoDB Atlas connection URI.
-    Run the bot script using the command python bot.py.
+    python bot.py
 
-Features
-Chat Commands
-The bot supports the following chat commands:
+Usage
+
+    Join your Twitch channel chat to start using the bot.
+    Use the available commands to interact with the bot and access its features.
+
+#Commands
 
     !check: Checks if the bot is connected to the chat.
     !discord: Sends a Discord server invite link.
     !dadjoke: Calls the dad joke API and sends a random dad joke to the chat.
     !points: Displays the points of the user who issued the command.
     !roll <number>: Rolls a dice with a specified number of sides and performs point calculations based on the result.
-    !add <user> <points>: Mod-only command to add points to a user in the chat.
     !runs: Retrieves the list of completed runs from the database and sends it to the chat.
     !addrun <run_name>: Adds a new run name to the completed runs list in the database.
     !removerun <run_name>: Removes a run name from the completed runs list in the database.
-    !quiz: Starts a quiz by sending a random unanswered question to the chat.
     !commands: Displays a list of available commands.
 
+#Main.py and BotLoop.py
+To run these two files, you will need an extra monitor
+      
+      Edit the screen size based on your monitor and where the "You died" displays
+      Run both files simultaneously  
+      
 
-Additional Features
+Contributing
 
-    The bot automatically assigns points to users based on their chat activity.
+Contributions are welcome! If you have any ideas, suggestions, or bug reports, please open an issue or submit a pull request.
 
-How does Main.py work?
-    
-    Have a second monitor open, the bot takes screenshot of every frame and finds a text that equals "you died:
-    If a stream fails then it adds a count to the json file
-    
+Acknowledgments
+
+    The Twitchio library for providing the Twitch chat integration.
+    The Dad Joke API for providing the dad jokes used in the bot.
