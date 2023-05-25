@@ -4,6 +4,7 @@ from pymongo.mongo_client import MongoClient
 import configuration
 import requests
 import time
+import re
 
 """ Initializing the bot """
 bot = commands.Bot(
@@ -49,19 +50,14 @@ async def event_message(ctx):
             'points': '15'
         }
         all_users.insert_one(new_user)
-    message = ctx.content.lower()  # Convert message to lowercase for case-insensitive comparison
+    message = ctx.content.lower()
     if "i am" in message or "i'm" in message or "im" in message:
         # Extract the name from the message
-        name = ""
-        if "i am" in message:
-            name = message.split("i am")[1].strip()
-        elif "i'm" in message:
-            name = message.split("i'm")[1].strip()
-        elif "im" in message:
-            name = message.split("im")[1].strip()
-        # Reply with the message
-        reply = f"Hi {name}, I am bocoruncounter"
-        await ctx.channel.send(reply)
+        name = re.search(r"(?i)(?:i am|i'm|im)\s+(.+)", message)
+        if name:
+            name = name.group(1)
+            reply = f"Hi {name}, I am bot"
+            await ctx.channel.send(reply)
 
 
 # Checks if the bot is connected to the chat
