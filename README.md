@@ -1,8 +1,9 @@
-Twitch Bot README
+Twitch Bot for Elden Ring streamers
 
 This is a Twitch bot written in Python using the twitchio library. The bot is designed to connect to a Twitch channel and perform various actions based on chat commands. It utilizes MongoDB Atlas for storing user points, completed runs, and quiz questions.
-Prerequisites
 
+
+Prerequisites
 Before running the bot, make sure you have the following:
 
     Python installed on your machine (version 3.6 or higher)
@@ -10,8 +11,8 @@ Before running the bot, make sure you have the following:
     pymongo library installed (pip install pymongo)
     MongoDB Atlas account and a cluster set up (for storing data)
 
-Configuration
 
+Configuration
 The bot requires a configuration file named configuration.py with the following variables:
 
     TMI_TOKEN: Your Twitch chat OAuth token (can be obtained from https://twitchapps.com/tmi/)
@@ -22,7 +23,9 @@ The bot requires a configuration file named configuration.py with the following 
     MONGODB_USERNAME: Your MongoDB Atlas database username
     MONGODB_PASSWORD: Your MongoDB Atlas database password
 
-Make sure to replace the placeholder values in configuration.py with your actual credentials.
+Make sure to replace the placeholder values in configuration.py with your actual credentials. For example
+for CLIENT_ID: "ID"
+
 Setup
 
     Clone or download the Twitch bot source code to your local machine.
@@ -46,10 +49,15 @@ The bot supports the following chat commands:
     !addrun <run_name>: Adds a new run name to the completed runs list in the database.
     !removerun <run_name>: Removes a run name from the completed runs list in the database.
     !quiz: Starts a quiz by sending a random unanswered question to the chat.
-    !quiz answer: Allows users to answer the current quiz question and awards points for correct answers.
     !commands: Displays a list of available commands.
+
 
 Additional Features
 
     The bot automatically assigns points to users based on their chat activity.
-    The bot keeps track of fisted users and displays the list upon request.
+
+How does Main.py work?
+    
+    Have a second monitor open, the bot takes screenshot of every frame and finds a text that equals "you died:
+    If a stream fails then it adds a count to the json file
+    
