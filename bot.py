@@ -50,14 +50,14 @@ async def event_message(ctx):
             'points': '15'
         }
         all_users.insert_one(new_user)
-    message = ctx.content.lower()
-    if "i am" in message or "i'm" in message or "im" in message:
-        # Extract the name from the message
-        name = re.search(r"(?i)(?:i am|i'm|im)\s+(.+)", message)
-        if name:
-            name = name.group(1)
-            reply = f"Hi {name}, I am bot"
-            await ctx.channel.send(reply)
+    # message = ctx.content.lower()
+    # if "i am" in message or "i'm" in message or "im" in message:
+    #     # Extract the name from the message
+    #     name = re.search(r"(?i)(?:i am|i'm|im)\s+(.+)", message)
+    #     if name:
+    #         name = name.group(1)
+    #         reply = f"Hi {name}, I am bot"
+    #         await ctx.channel.send(reply)
 
 
 # Checks if the bot is connected to the chat
