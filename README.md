@@ -1,6 +1,6 @@
 # TwitchBot
 
-TwitchBot is a Python-based chat bot for Twitch. It provides various features and commands that can be used in Twitch chat.
+TwitchBot is a Python-based chatbot for Twitch. It provides various features and commands that can be used in Twitch chat.
 
 ## Features
 
@@ -27,6 +27,7 @@ pip install -r requirements.txt
 Set up the configuration file
 The bot requires a configuration file named configuration.py with the following variables:
     
+
     TMI_TOKEN: Your Twitch chat OAuth token (can be obtained from https://twitchapps.com/tmi/)
     CLIENT_ID: Your Twitch application client ID
     BOT_NICK: The username of your bot account
@@ -36,9 +37,7 @@ The bot requires a configuration file named configuration.py with the following 
     MONGODB_PASSWORD: Your MongoDB Atlas database password
 
 Run the bot:
-
-bash
-
+    
     python bot.py
 
 Usage
