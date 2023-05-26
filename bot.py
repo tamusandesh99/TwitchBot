@@ -50,6 +50,7 @@ async def event_message(ctx):
             'points': '15'
         }
         all_users.insert_one(new_user)
+    time.sleep(3)
     # message = ctx.content.lower()
     # if "i am" in message or "i'm" in message or "im" in message:
     #     # Extract the name from the message
