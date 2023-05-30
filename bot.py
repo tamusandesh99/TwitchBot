@@ -210,6 +210,22 @@ async def add_run_chat(ctx, *, run_name):
         await ctx.send('@' + ctx.author.name + ' added ' + '*' + run_name + '*' + ' to the completed run list')
 
 
+@bot.command(name='addrunds3')
+async def add_run_chat(ctx, *, run_name):
+    query = {'run_name': run_name}
+    find_run = all_runs.find_one(query)
+    new_run = {
+        'run_name': run_name,
+        'added_by': ctx.author.name,
+        'game_name': 'DS3'
+    }
+    if find_run:
+        await ctx.send("@" + ctx.author.name + ' That run is already in the list')
+    else:
+        all_runs.insert_one(new_run)
+        await ctx.send('@' + ctx.author.name + ' added ' + '*' + run_name + '*' + ' to the completed run list')
+
+
 # Takes author message as argument then remove object from database
 @bot.command(name='removerun')
 async def remove_run_chat(ctx, *, run_name):
