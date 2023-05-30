@@ -1,4 +1,6 @@
 import random
+
+import asyncio
 from twitchio.ext import commands
 from pymongo.mongo_client import MongoClient
 import configuration
@@ -33,39 +35,32 @@ async def event_ready():
 
 @bot.event()
 async def event_message(ctx):
-    if ctx.author.name.lower() == configuration.BOT_NICK.lower():
-        # Ignore the bot's own comments
-        return
+    try:
+        query_user = {'user': ctx.author.name}
+        find_user = await all_users.find_one(query_user)
+        if find_user:
+            user_points = find_user.get('points', 0)
+            add_points = int(user_points) + 1
+            new_points = {"$set": {"points": str(add_points)}}
+            await all_users.update_one(query_user, new_points)
+        else:
+            new_user = {
+                'user': ctx.author.name,
+                'points': '15'
+            }
+            await all_users.insert_one(new_user)
 
-    query_user = {'user': ctx.author.name}
-    find_user = all_users.find_one(query_user)
-    if find_user:
-        user_points = find_user['points']
-        add_points = int(user_points) + 1
-        new_points = {"$set": {"points": str(add_points)}}
-        all_users.update_one(query_user, new_points)
-    else:
-        new_user = {
-            'user': ctx.author.name,
-            'points': '15'
-        }
-        all_users.insert_one(new_user)
-    time.sleep(3)
-    # message = ctx.content.lower()
-    # if "i am" in message or "i'm" in message or "im" in message:
-    #     # Extract the name from the message
-    #     name = re.search(r"(?i)(?:i am|i'm|im)\s+(.+)", message)
-    #     if name:
-    #         name = name.group(1)
-    #         reply = f"Hi {name}, I am bot"
-    #         await ctx.channel.send(reply)
+        await asyncio.sleep(3)
+
+    except Exception as e:
+        print(f"An error occurred in event_message: {str(e)}")
 
 
 # Checks if the bot is connected to the chat
 @bot.command(name="check")
 async def check(ctx):
     print('here')
-    await ctx.send("@" + ctx.author.name + " Im here")
+    await ctx.send("@" + ctx.author.name + " You are checked in")
 
 
 # replies with discord link
@@ -165,7 +160,25 @@ async def addPoints(ctx, user_name, points):
 # Gets all the runs from database and sends it to chat
 @bot.command(name='runs')
 async def runs(ctx):
-    run_list = list(all_runs.distinct("run_name"))
+    run_list = list(all_runs.distinct("run_name", {"$or": [{"game_name": ""}, {"game_name": {"$exists": False}}]}))
+    sorted_values = sorted(run_list, key=lambda x: all_runs.find_one({"run_name": x})["_id"], reverse=False)
+    message = "Completed runs: " + str(', '.join(sorted_values))
+    if len(message) <= 500:
+        try:
+            await ctx.send(message)
+        except:
+            print('Error')
+    else:
+        try:
+            await ctx.send("Completed runs (part 1): " + str(', '.join(sorted_values[:len(sorted_values) // 2])))
+            await ctx.send("Completed runs (part 2): " + str(', '.join(sorted_values[len(sorted_values) // 2:])))
+        except:
+            print('Error')
+
+
+@bot.command(name='runsds3')
+async def runs(ctx):
+    run_list = list(all_runs.distinct("run_name", {"game_name": "DS3"}))
     sorted_values = sorted(run_list, key=lambda x: all_runs.find_one({"run_name": x})["_id"], reverse=False)
     message = "Completed runs: " + str(', '.join(sorted_values))
     if len(message) <= 500:

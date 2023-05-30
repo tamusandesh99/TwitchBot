@@ -1,11 +1,12 @@
-# fly.toml file generated for twitch-bot-sandesh on 2023-04-06T13:59:56-04:00
+# fly.toml app configuration file generated for twitch-bot-sandesh on 2023-05-26T18:49:42-04:00
+#
+# See https://fly.io/docs/reference/configuration/ for information about how to use this file.
+#
 
 app = "twitch-bot-sandesh"
-kill_signal = "SIGINT"
-kill_timeout = 5
 primary_region = "bos"
-processes = []
+kill_signal = "SIGINT"
+kill_timeout = "5s"
 
 [env]
-
-
+  PRIMARY_REGION = "bos"
