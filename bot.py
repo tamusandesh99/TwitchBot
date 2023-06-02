@@ -355,7 +355,7 @@ async def jake(ctx):
     await ctx.send("Its Jake. W Jake")
 
 
-RECONNECT_DELAY = 10  # Delay in seconds between reconnection attempts
+RECONNECT_DELAY = 1000  # Delay in seconds between reconnection attempts
 MAX_RECONNECT_ATTEMPTS = 10  # Maximum number of reconnection attempts
 
 
@@ -374,17 +374,22 @@ def reconnect_bot():
     print(f"Max reconnection attempts reached. Exiting...")
 
 
-def is_channel_live(channel):
-    url = f"https://api.twitch.tv/helix/streams?user_login={channel}"
-    headers = {
-        "Client-ID": configuration.CLIENT_ID,
-        "Authorization": f"Bearer {configuration.TMI_TOKEN}"
-    }
-    response = requests.get(url, headers=headers)
-    data = response.json()
-    if 'data' in data:
-        return True if len(data['data']) > 0 else False
-    return False
+def is_channel_live():
+    try:
+        url = "https://api.twitch.tv/helix/streams"
+        params = {
+            "user_login": configuration.CHANNEL
+        }
+        headers = {
+            "Client-ID": configuration.CLIENT_ID,
+            "Authorization": "Bearer " + configuration.TMI_TOKEN,
+        }
+        response = requests.get(url, params=params, headers=headers)
+        data = response.json()
+        return len(data["data"]) > 0  # Check if there is at least one stream in the data
+    except Exception as e:
+        print(f"Error checking channel live status: {str(e)}")
+        return False
 
 
 if __name__ == '__main__':
