@@ -374,6 +374,19 @@ def reconnect_bot():
     print(f"Max reconnection attempts reached. Exiting...")
 
 
+def is_channel_live(channel):
+    url = f"https://api.twitch.tv/helix/streams?user_login={channel}"
+    headers = {
+        "Client-ID": configuration.CLIENT_ID,
+        "Authorization": f"Bearer {configuration.TMI_TOKEN}"
+    }
+    response = requests.get(url, headers=headers)
+    data = response.json()
+    if 'data' in data:
+        return True if len(data['data']) > 0 else False
+    return False
+
+
 if __name__ == '__main__':
     reconnect_bot()
     # bot.run()
