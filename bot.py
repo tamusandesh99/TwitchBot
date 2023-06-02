@@ -355,7 +355,7 @@ async def jake(ctx):
     await ctx.send("Its Jake. W Jake")
 
 
-RECONNECT_DELAY = 1000  # Delay in seconds between reconnection attempts
+RECONNECT_DELAY = 1800  # Delay in seconds between reconnection attempts
 MAX_RECONNECT_ATTEMPTS = 10  # Maximum number of reconnection attempts
 
 
