@@ -355,8 +355,8 @@ async def jake(ctx):
     await ctx.send("Its Jake. W Jake")
 
 
-RECONNECT_DELAY = 1800  # Delay in seconds between reconnection attempts
-MAX_RECONNECT_ATTEMPTS = 10  # Maximum number of reconnection attempts
+RECONNECT_DELAY = 2000  # Delay in seconds between reconnection attempts
+MAX_RECONNECT_ATTEMPTS = 50  # Maximum number of reconnection attempts
 
 
 # To reconnect to the channel if it fails midway
@@ -372,6 +372,10 @@ def reconnect_bot():
             reconnect_attempt += 1
             time.sleep(RECONNECT_DELAY)
     print(f"Max reconnection attempts reached. Exiting...")
+
+
+# Future plan to run bot only when the channel goes live. Will need some notification to the email or some kind of
+# trigger
 
 
 def is_channel_live():
