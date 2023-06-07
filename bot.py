@@ -6,7 +6,7 @@ from pymongo.mongo_client import MongoClient
 import configuration
 import requests
 import time
-import re
+import vip
 
 """ Initializing the bot """
 bot = commands.Bot(
@@ -345,9 +345,9 @@ async def fist(ctx):
     await ctx.send("Fisted so far: " + str(', '.join(fist_list)))
 
 
-@bot.command(name='wiki')
+@bot.command(name='golan')
 async def golan(ctx):
-    await ctx.send("Yep. Its Golan and she VIP too")
+    await ctx.send(vip.golan())
 
 
 @bot.command(name='whoisW')
