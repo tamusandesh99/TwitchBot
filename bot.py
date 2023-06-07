@@ -6,7 +6,7 @@ from pymongo.mongo_client import MongoClient
 import configuration
 import requests
 import time
-import vip
+import extraCommands
 
 """ Initializing the bot """
 bot = commands.Bot(
@@ -332,27 +332,22 @@ async def mark_question_answered(question):
 # Lists all the commands that is available
 @bot.command(name='commands')
 async def all_commands(ctx):
-    await ctx.send('@' + ctx.author.name + ' ' + ' !dadjoke' + ' ' + ' !discord' + ' ' + ' !runs ' + ' ' + ' !addrun' +
-                   ' ' + ' !removerun' + ' ' +
-                   ' !points' + ' ' + ' !fist' + ' ' + ' !roll' + ' ' + ' !check')
-
-
-fist_list = ['Radagon', 'Maliketh', ' Radahn', 'Margit', 'Morgott', 'Mogh', 'Godfrey']
+    await ctx.send('@' + ctx.author.name + ' ' + extraCommands.all_commands())
 
 
 @bot.command(name='fist')
 async def fist(ctx):
-    await ctx.send("Fisted so far: " + str(', '.join(fist_list)))
+    await ctx.send("Fisted so far: " + extraCommands.fist())
 
 
 @bot.command(name='golan')
 async def golan(ctx):
-    await ctx.send(vip.golan())
+    await ctx.send(extraCommands.golan())
 
 
 @bot.command(name='whoisW')
 async def jake(ctx):
-    await ctx.send("Its Jake. W Jake")
+    await ctx.send(extraCommands.jake())
 
 
 RECONNECT_DELAY = 2000  # Delay in seconds between reconnection attempts
