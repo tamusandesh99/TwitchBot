@@ -15,7 +15,7 @@ def migas():
 
 def all_commands():
     return (' !dadjoke' + ' ' + ' !discord' + ' ' + ' !runs ' + ' ' + ' !addrun' +
-                   ' ' + ' !removerun' + ' ' +  ' !points' + ' ' + ' !fist' + ' ' + ' !roll' + ' ' + ' !check')
+                   ' ' + ' !removerun' + ' ' + ' !points' + ' ' + ' !fist' + ' ' + ' !roll' + ' ' + ' !check')
 
 
 def jake():
