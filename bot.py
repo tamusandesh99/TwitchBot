@@ -1,12 +1,13 @@
 import random
-
 import asyncio
-from twitchio.ext import commands
-from pymongo.mongo_client import MongoClient
 import configuration
 import requests
 import time
 import extraCommands
+
+from twitchio.ext import commands
+from pymongo.mongo_client import MongoClient
+
 
 """ Initializing the bot """
 bot = commands.Bot(
@@ -31,6 +32,12 @@ all_quiz = my_database.quiz
 @bot.event()
 async def event_ready():
     print(f"Connected to {configuration.CHANNEL}")
+
+
+# Event triggered when Twitch sends a RECONNECT notice
+@bot.event
+async def event_reconnect():
+    print("Received a RECONNECT notice. Reconnecting...")
 
 
 @bot.event()
@@ -350,6 +357,32 @@ async def jake(ctx):
     await ctx.send(extraCommands.jake())
 
 
+@bot.event
+async def event_reconnect():
+    print("Reconnecting...")
+    reconnect_attempt = 0
+    while reconnect_attempt < MAX_RECONNECT_ATTEMPTS:
+        try:
+            await bot._ws.close()
+            await bot._ws.wait_closed()
+            await bot._ws.close_connection(force=True)
+            bot._ws = None
+            bot._ready_state = False
+            await bot._setup()
+            await bot._ws._connect()
+            await bot._ws._authenticate(bot.nick, bot.token)
+            await bot._ws.join_channels(bot.initial_channels)
+            print("Reconnected successfully!")
+            return
+        except Exception as e:
+            print(f"Reconnection attempt {reconnect_attempt + 1} failed.")
+            print(f"Error: {e}")
+            reconnect_attempt += 1
+            time.sleep(RECONNECT_DELAY)
+    print(f"Max reconnection attempts reached. Exiting...")
+    exit(1)
+
+
 RECONNECT_DELAY = 2000  # Delay in seconds between reconnection attempts
 MAX_RECONNECT_ATTEMPTS = 50  # Maximum number of reconnection attempts
 
@@ -367,28 +400,6 @@ def reconnect_bot():
             reconnect_attempt += 1
             time.sleep(RECONNECT_DELAY)
     print(f"Max reconnection attempts reached. Exiting...")
-
-
-# Future plan to run bot only when the channel goes live. Will need some notification to the email or some kind of
-# trigger
-
-
-def is_channel_live():
-    try:
-        url = "https://api.twitch.tv/helix/streams"
-        params = {
-            "user_login": configuration.CHANNEL
-        }
-        headers = {
-            "Client-ID": configuration.CLIENT_ID,
-            "Authorization": "Bearer " + configuration.TMI_TOKEN,
-        }
-        response = requests.get(url, params=params, headers=headers)
-        data = response.json()
-        return len(data["data"]) > 0  # Check if there is at least one stream in the data
-    except Exception as e:
-        print(f"Error checking channel live status: {str(e)}")
-        return False
 
 
 if __name__ == '__main__':
