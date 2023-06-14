@@ -357,32 +357,6 @@ async def jake(ctx):
     await ctx.send(extraCommands.jake())
 
 
-@bot.event
-async def event_reconnect():
-    print("Reconnecting...")
-    reconnect_attempt = 0
-    while reconnect_attempt < MAX_RECONNECT_ATTEMPTS:
-        try:
-            await bot._ws.close()
-            await bot._ws.wait_closed()
-            await bot._ws.close_connection(force=True)
-            bot._ws = None
-            bot._ready_state = False
-            await bot._setup()
-            await bot._ws._connect()
-            await bot._ws._authenticate(bot.nick, bot.token)
-            await bot._ws.join_channels(bot.initial_channels)
-            print("Reconnected successfully!")
-            return
-        except Exception as e:
-            print(f"Reconnection attempt {reconnect_attempt + 1} failed.")
-            print(f"Error: {e}")
-            reconnect_attempt += 1
-            time.sleep(RECONNECT_DELAY)
-    print(f"Max reconnection attempts reached. Exiting...")
-    exit(1)
-
-
 RECONNECT_DELAY = 2000  # Delay in seconds between reconnection attempts
 MAX_RECONNECT_ATTEMPTS = 50  # Maximum number of reconnection attempts
 
