@@ -183,7 +183,7 @@ async def runs(ctx):
             print('Error')
 
 
-@bot.command(name='runsds3')
+@bot.command(name='runsds')
 async def runs(ctx):
     run_list = list(all_runs.distinct("run_name", {"game_name": "DS3"}))
     sorted_values = sorted(run_list, key=lambda x: all_runs.find_one({"run_name": x})["_id"], reverse=False)
@@ -217,7 +217,7 @@ async def add_run_chat(ctx, *, run_name):
         await ctx.send('@' + ctx.author.name + ' added ' + '*' + run_name + '*' + ' to the completed run list')
 
 
-@bot.command(name='addrunds3')
+@bot.command(name='addrunds')
 async def add_run_chat(ctx, *, run_name):
     query = {'run_name': run_name}
     find_run = all_runs.find_one(query)
