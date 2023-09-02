@@ -57,7 +57,7 @@ async def event_message(ctx):
             }
             all_users.insert_one(new_user)
 
-            await asyncio.sleep(3)
+            time.sleep(3)
 
     except Exception as e:
         print(f"An error occurred in event_message: {str(e)}")
