@@ -43,20 +43,24 @@ async def event_reconnect():
 @bot.event()
 async def event_message(ctx):
     try:
+        message_content = ctx.content.lower()
+        if message_content.startswith('why'):
+            await ctx.send("because it's faster")
+
         query_user = {'user': ctx.author.name}
-        find_user = await all_users.find_one(query_user)
+        find_user = all_users.find_one(query_user)
         if find_user:
             user_points = find_user.get('points', 0)
             add_points = int(user_points) + 1
             new_points = {"$set": {"points": str(add_points)}}
             all_users.update_one(query_user, new_points)
+            print(ctx.author.name)
         else:
             new_user = {
                 'user': ctx.author.name,
                 'points': '15'
             }
             all_users.insert_one(new_user)
-
             time.sleep(3)
 
     except Exception as e:
@@ -183,9 +187,27 @@ async def runs(ctx):
             print('Error')
 
 
-@bot.command(name='runsds')
+@bot.command(name='DSruns')
 async def runs(ctx):
     run_list = list(all_runs.distinct("run_name", {"game_name": "DS3"}))
+    sorted_values = sorted(run_list, key=lambda x: all_runs.find_one({"run_name": x})["_id"], reverse=False)
+    message = "Completed runs: " + str(', '.join(sorted_values))
+    if len(message) <= 500:
+        try:
+            await ctx.send(message)
+        except:
+            print('Error')
+    else:
+        try:
+            await ctx.send("Completed runs (part 1): " + str(', '.join(sorted_values[:len(sorted_values) // 2])))
+            await ctx.send("Completed runs (part 2): " + str(', '.join(sorted_values[len(sorted_values) // 2:])))
+        except:
+            print('Error')
+
+
+@bot.command(name='LOPruns')
+async def runs(ctx):
+    run_list = list(all_runs.distinct("run_name", {"game_name": "LOP"}))
     sorted_values = sorted(run_list, key=lambda x: all_runs.find_one({"run_name": x})["_id"], reverse=False)
     message = "Completed runs: " + str(', '.join(sorted_values))
     if len(message) <= 500:
@@ -217,7 +239,7 @@ async def add_run_chat(ctx, *, run_name):
         await ctx.send('@' + ctx.author.name + ' added ' + '*' + run_name + '*' + ' to the completed run list')
 
 
-@bot.command(name='addrunds')
+@bot.command(name='addrunDS')
 async def add_run_chat(ctx, *, run_name):
     query = {'run_name': run_name}
     find_run = all_runs.find_one(query)
@@ -225,6 +247,22 @@ async def add_run_chat(ctx, *, run_name):
         'run_name': run_name,
         'added_by': ctx.author.name,
         'game_name': 'DS3'
+    }
+    if find_run:
+        await ctx.send("@" + ctx.author.name + ' That run is already in the list')
+    else:
+        all_runs.insert_one(new_run)
+        await ctx.send('@' + ctx.author.name + ' added ' + '*' + run_name + '*' + ' to the completed run list')
+
+
+@bot.command(name='addrunLOP')
+async def add_run_chat(ctx, *, run_name):
+    query = {'run_name': run_name}
+    find_run = all_runs.find_one(query)
+    new_run = {
+        'run_name': run_name,
+        'added_by': ctx.author.name,
+        'game_name': 'LOP'
     }
     if find_run:
         await ctx.send("@" + ctx.author.name + ' That run is already in the list')
@@ -243,97 +281,6 @@ async def remove_run_chat(ctx, *, run_name):
         await ctx.send('@' + ctx.author.name + ' removed ' + '*' + run_name + '*' + ' from the completed run list')
     else:
         await ctx.send('@' + ctx.author.name + ' No such run in the list')
-
-
-active_question = {
-    "question": None,
-    "answer": None,
-    "asked_by": None
-}
-is_question_active = False
-
-
-@bot.command(name='quiz')
-async def quiz(ctx, *, user_answer=None):
-    if user_answer is None:
-        await send_question(ctx)
-    else:
-        await check_answer(ctx, user_answer)
-
-
-async def send_question(ctx):
-    global is_question_active
-
-    if is_question_active:
-        # Send the active question to the new user
-        await ctx.send("Question: " + active_question["question"] + "asked by " + active_question["asked_by"])
-    else:
-        try:
-            question_data = all_quiz.find({"answered": False}, {"question": 1})
-            all_questions = [data["question"] for data in question_data]
-            if all_questions:
-                random_question = random.choice(all_questions)
-                quiz_answer_data = all_quiz.find_one({"question": random_question}, {"answer": 1})
-                quiz_answer = quiz_answer_data["answer"]
-                active_question["question"] = random_question
-                active_question["answer"] = quiz_answer.lower().strip()
-                active_question["asked_by"] = ctx.author.name
-                is_question_active = True
-                await ctx.send("Question: " + random_question + " *do !quiz answer* to answer")
-            else:
-                await ctx.send("No questions available at the moment.")
-                # Here write a method to make all the questions in the database set to false.
-        except Exception as e:
-            await ctx.send("An error occurred while retrieving the question. Please try again later.")
-
-
-# Checks if the answer is correct when the user answers
-async def check_answer(ctx, user_answer):
-    global is_question_active
-
-    if not is_question_active:
-        await ctx.send("No question is currently active.")
-        return
-
-    user_answer = user_answer.strip().lower()
-    user_answer_words = user_answer.split()
-
-    is_correct_answer = any(word in active_question["answer"] for word in user_answer_words)
-    if is_correct_answer:
-        await update_user_points(ctx.author.name, 10)
-        await ctx.send("@" + ctx.author.name + " Correct answer! Added 10 points.")
-        await mark_question_answered(active_question["question"])
-    else:
-        await ctx.send("@" + ctx.author.name + " Incorrect answer.")
-
-    is_question_active = False
-    active_question["question"] = None
-    active_question["answer"] = None
-    active_question["asked_by"] = None
-
-
-# Update the user points from the database.
-async def update_user_points(username, points_to_add):
-    query_user = {'user': username}
-    find_user = all_users.find_one(query_user)
-    if find_user:
-        user_points = find_user['points']
-        add_points = int(user_points) + points_to_add
-        new_points = {"$set": {"points": str(add_points)}}
-        all_users.update_one(query_user, new_points)
-    else:
-        new_user = {
-            'user': username,
-            'points': '110'
-        }
-        all_users.insert_one(new_user)
-
-
-#  Updates the status on database. If the question has been answered then it will not be repeated
-async def mark_question_answered(question):
-    set_question_as_answered = all_quiz.find_one({"question": question}, {"answered": 1})
-    set_answered_true = {"$set": {"answered": True}}
-    all_quiz.update_one(set_question_as_answered, set_answered_true)
 
 
 # Lists all the commands that is available
