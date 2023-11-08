@@ -43,26 +43,27 @@ async def event_reconnect():
 @bot.event()
 async def event_message(ctx):
     try:
-        message_content = ctx.content.lower()
-        if message_content.startswith('why'):
-            await ctx.send("because it's faster")
+        if ctx.author:
+            query_user = {'user': ctx.author.name}
+            find_user = all_users.find_one(query_user)
+            if find_user:
+                user_points = find_user.get('points', 0)
+                add_points = int(user_points) + 1
+                new_points = {"$set": {"points": str(add_points)}}
+                all_users.update_one(query_user, new_points)
+            else:
+                new_user = {
+                    'user': ctx.author.name,
+                    'points': '15'
+                }
+                all_users.insert_one(new_user)
+                time.sleep(3)
 
-        query_user = {'user': ctx.author.name}
-        find_user = all_users.find_one(query_user)
-        if find_user:
-            user_points = find_user.get('points', 0)
-            add_points = int(user_points) + 1
-            new_points = {"$set": {"points": str(add_points)}}
-            all_users.update_one(query_user, new_points)
-            print(ctx.author.name)
+            if ctx.content.lower().startswith('why'):
+                response = "because it's faster"
+                await ctx.send(response)
         else:
-            new_user = {
-                'user': ctx.author.name,
-                'points': '15'
-            }
-            all_users.insert_one(new_user)
-            time.sleep(3)
-
+            print("Received a message with no author.")
     except Exception as e:
         print(f"An error occurred in event_message: {str(e)}")
 
