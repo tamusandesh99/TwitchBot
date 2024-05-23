@@ -192,7 +192,7 @@ async def current_run_method(ctx):
     try:
         current_run_data = current_run.find_one()  # Fetch one document from the collection
         if current_run_data and 'current_run' in current_run_data:
-            run_message = f"Run: {current_run_data['current_run']}"
+            run_message = f"Current Run: {current_run_data['current_run']}"
         else:
             run_message = "No current run found."
         await ctx.send("@" + ctx.author.name + ' ' + run_message)
