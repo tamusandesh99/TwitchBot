@@ -8,7 +8,6 @@ import extraCommands
 from twitchio.ext import commands
 from pymongo.mongo_client import MongoClient
 
-
 """ Initializing the bot """
 bot = commands.Bot(
     token=configuration.TMI_TOKEN,
@@ -27,6 +26,7 @@ my_database = client.Twitch
 all_runs = my_database.Runs
 all_users = my_database.points
 all_quiz = my_database.quiz
+current_run = my_database.Run
 
 
 @bot.event()
@@ -71,7 +71,6 @@ async def event_message(ctx):
 # Checks if the bot is connected to the chat
 @bot.command(name="check")
 async def check(ctx):
-    print('here')
     await ctx.send("@" + ctx.author.name + " You are checked in")
 
 
@@ -186,6 +185,33 @@ async def runs(ctx):
             await ctx.send("Completed runs (part 2): " + str(', '.join(sorted_values[len(sorted_values) // 2:])))
         except:
             print('Error')
+
+
+@bot.command(name='run')
+async def current_run_method(ctx):
+    try:
+        current_run_data = current_run.find_one()  # Fetch one document from the collection
+        if current_run_data and 'current_run' in current_run_data:
+            run_message = f"Run: {current_run_data['current_run']}"
+        else:
+            run_message = "No current run found."
+        await ctx.send("@" + ctx.author.name + ' ' + run_message)
+    except Exception as e:
+        print(f"An error occurred in current_run_method: {str(e)}")
+
+
+@bot.command(name='editrun')
+async def edit_run_method(ctx, *, new_run):
+    try:
+        # Update the current_run field in the database
+        result = current_run.update_one({}, {"$set": {"current_run": new_run}})
+
+        if result.modified_count > 0:
+            await ctx.send(f"Current run updated to: {new_run}")
+        else:
+            await ctx.send("Failed to update the current run. Please try again.")
+    except Exception as e:
+        print(f"An error occurred in edit_run_method: {str(e)}")
 
 
 @bot.command(name='DSruns')
